@@ -6,6 +6,7 @@ public class Cat
 
     private double minWeight;
     private double maxWeight;
+    private double foodAmount;
 
     public Cat()
     {
@@ -13,7 +14,12 @@ public class Cat
         originWeight = weight;
         minWeight = 1000.0;
         maxWeight = 9000.0;
+        foodAmount = 0;
+    }
 
+    public void pee() {
+        weight = weight - 1;
+        System.out.println("Мама-мия! Итальяно писсуаро!");
     }
 
     public void meow()
@@ -25,6 +31,7 @@ public class Cat
     public void feed(Double amount)
     {
         weight = weight + amount;
+        foodAmount = foodAmount + amount;
     }
 
     public void drink(Double amount)
@@ -35,6 +42,10 @@ public class Cat
     public Double getWeight()
     {
         return weight;
+    }
+
+    public double getFoodAmount() {
+        return foodAmount;
     }
 
     public String getStatus()
