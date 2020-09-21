@@ -9,6 +9,7 @@ public class Cat
     private double weight;
 
     private double foodAmount;
+    private CatColor catColor;
 
     private boolean isAlive; //переключатель для уменьшения catCount
     private static int catCount = 0;
@@ -104,6 +105,14 @@ public class Cat
 
     public static int getCatCount() {
         return catCount;
+    }
+
+    public CatColor getCatColor() {
+        return catColor;
+    }
+
+    public void setCatColor(CatColor catColor) {
+        this.catColor = catColor;
     }
 
     @Override
