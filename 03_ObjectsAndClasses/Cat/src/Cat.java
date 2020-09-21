@@ -22,6 +22,11 @@ public class Cat
         catCount++;
     }
 
+    public Cat (double weight) {
+        this();
+        this.weight = weight;
+    }
+
     public void pee() {
         if (!declareDead()) {
             weight = weight - 1;
@@ -99,5 +104,10 @@ public class Cat
 
     public static int getCatCount() {
         return catCount;
+    }
+
+    @Override
+    public String toString() {
+        return "кошка весом " + weight + " г.";
     }
 }
