@@ -38,11 +38,9 @@ public class Loader
         System.out.println("Пятая кошка чувствует себя забытой и заедает горе кормом.");
         cat5.feed(150.0);
         System.out.println("Ну а еще она писает во все хозяйские тапки.");
-        cat5.pee();
-        cat5.pee();
-        cat5.pee();
-        cat5.pee();
-        cat5.pee();
+        for (int j = 0; j < 5; j++) {
+            cat5.pee();
+        }
         System.out.println("Пятая кошка съела " + cat5.getFoodAmount() + " г корма.");
 
         System.out.println();
