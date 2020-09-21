@@ -23,9 +23,25 @@ public class Cat
         catCount++;
     }
 
-    public Cat (double weight) {
+    public Cat(double weight) {
         this();
         this.weight = weight;
+        this.originWeight = weight;
+    }
+
+    public Cat(double weight, double foodAmount, CatColor catColor) {
+        this.weight = weight;
+        this.originWeight = weight;
+        this.foodAmount = foodAmount;
+        this.catColor = catColor;
+        this.isAlive = isAlive();
+        if (this.isAlive) {
+            catCount++;
+        }
+    }
+
+    public Cat(Cat cat) {
+        this(cat.getWeight(), cat.getFoodAmount(), cat.getCatColor());
     }
 
     public void pee() {
