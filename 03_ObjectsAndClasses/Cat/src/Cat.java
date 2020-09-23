@@ -27,6 +27,7 @@ public class Cat
         this();
         this.weight = weight;
         this.originWeight = weight;
+        declareDead();
     }
 
     public Cat(double weight, double foodAmount, CatColor catColor) {
@@ -34,7 +35,7 @@ public class Cat
         this.originWeight = weight;
         this.foodAmount = foodAmount;
         this.catColor = catColor;
-        this.isAlive = isAlive();
+        this.isAlive = isAlive(this.weight);
         if (this.isAlive) {
             catCount++;
         }
@@ -74,12 +75,12 @@ public class Cat
         }
     }
 
-    private boolean isAlive() {
+    private boolean isAlive(double weight) {
         return (!(weight < MIN_WEIGHT)) && (!(weight > MAX_WEIGHT));
     }
     
     private boolean declareDead() {
-        if (!isAlive()) {
+        if (!isAlive(weight)) {
             System.out.println("This cat is dead, Jim!");
             // если еще не проверяли, жив кот или нет
             if (isAlive) {
@@ -104,11 +105,9 @@ public class Cat
     public String getStatus()
     {
         if(weight < MIN_WEIGHT) {
-            declareDead();
             return "Dead";
         }
         else if(weight > MAX_WEIGHT) {
-            declareDead();
             return "Exploded";
         }
         else if(weight > originWeight) {

@@ -54,6 +54,10 @@ public class Loader
         System.out.println("Материализовалась " + cat7.toString());
         Cat cat8 = getKitten();
         System.out.println("Материализовалась " + cat8.toString());
+        System.out.println("Кошек осталось на трубе: " + Cat.getCatCount());
+
+        System.out.println(new Cat(999.));
+        System.out.println("Кошек осталось на трубе: " + Cat.getCatCount());
     }
 
     private static Cat getKitten() {

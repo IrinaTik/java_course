@@ -36,7 +36,7 @@ public class Car
         return hasVehicle;
     }
 
-    public void setHasVehicle(boolean hasVehicle) {
+    public void setVehicle(boolean hasVehicle) {
         this.hasVehicle = hasVehicle;
     }
 
@@ -44,7 +44,7 @@ public class Car
         return isSpecial;
     }
 
-    public void setIsSpecial(boolean isSpecial) {
+    public void setSpecial(boolean isSpecial) {
         this.isSpecial = isSpecial;
     }
 
