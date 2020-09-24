@@ -14,20 +14,12 @@ public class Cat
     private boolean isAlive; //переключатель для уменьшения catCount
     private static int catCount = 0;
 
-    public Cat()
-    {
-        weight = 1500.0 + 3000.0 * Math.random();
-        originWeight = weight;
-        foodAmount = 0;
-        isAlive = true;
-        catCount++;
+    public Cat() {
+        this(1500.0 + 3000.0 * Math.random());
     }
 
     public Cat(double weight) {
-        this();
-        this.weight = weight;
-        this.originWeight = weight;
-        declareDead();
+        this(weight, 0, CatColor.RED);
     }
 
     public Cat(double weight, double foodAmount, CatColor catColor) {
