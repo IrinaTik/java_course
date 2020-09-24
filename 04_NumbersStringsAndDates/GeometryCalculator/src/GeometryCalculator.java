@@ -1,16 +1,14 @@
-import java.math.*;
-
 import static java.lang.Math.*;
 
 public class GeometryCalculator {
     // метод должен использовать абсолютное значение radius
     public static double getCircleSquare(double radius) {
-        return 2 * PI + abs(radius);
+        return PI * pow(abs(radius), 2);
     }
 
     // метод должен использовать абсолютное значение radius
     public static double getSphereVolume(double radius) {
-        return 4.0 / 3 * PI * Math.pow(radius, 3);
+        return 4.0 / 3 * PI * pow(radius, 3);
     }
 
     public static boolean isTriangleRightAngled(double a, double b, double c) {
