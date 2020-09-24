@@ -19,13 +19,17 @@ public class Main {
 
         System.out.println("==================================================");
         System.out.println("FLOAT");
-        System.out.println("Минимальное значение: " + Float.MIN_VALUE);
+        System.out.println("Минимальное значение: " + (-Float.MAX_VALUE));
         System.out.println("Максимальное значение: " + Float.MAX_VALUE);
         System.out.println("==================================================");
         System.out.println("DOUBLE");
-        System.out.println("Минимальное значение: " + Double.MIN_VALUE);
+        System.out.println("Минимальное значение: " + (-Double.MAX_VALUE));
         System.out.println("Максимальное значение: " + Double.MAX_VALUE);
 
+        System.out.println("==================================================");
+        System.out.println("CHAR");
+        System.out.println("Минимальное значение: " + (int) Character.MIN_VALUE );
+        System.out.println("Максимальное значение: " + (int) Character.MAX_VALUE);
     }
 
 }
