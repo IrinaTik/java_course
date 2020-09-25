@@ -58,9 +58,22 @@ public class Loader
 
         System.out.println(new Cat(999.));
         System.out.println("Кошек осталось на трубе: " + Cat.getCatCount());
+
+        catTest();
     }
 
     private static Cat getKitten() {
         return new Cat(1100.00);
+    }
+
+    private static void catTest() {
+        Cat cat = new Cat();
+        System.out.println("Статус кота: " + cat.getStatus());
+        System.out.println("Количество котов: " + Cat.getCatCount());
+        while (!cat.getStatus().equals("Exploded")) {
+            cat.feed(1000.);
+        }
+        System.out.println("Статус кота: " + cat.getStatus());
+        System.out.println("Количество котов: " + Cat.getCatCount());
     }
 }

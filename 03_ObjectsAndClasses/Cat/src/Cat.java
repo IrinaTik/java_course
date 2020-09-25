@@ -73,9 +73,9 @@ public class Cat
     
     private boolean declareDead() {
         if (!isAlive(weight)) {
-            System.out.println("This cat is dead, Jim!");
             // если еще не проверяли, жив кот или нет
             if (isAlive) {
+                System.out.println("This cat is dead, Jim!");
                 isAlive = false;
                 catCount--;
             }
@@ -97,9 +97,11 @@ public class Cat
     public String getStatus()
     {
         if(weight < MIN_WEIGHT) {
+            declareDead();
             return "Dead";
         }
         else if(weight > MAX_WEIGHT) {
+            declareDead();
             return "Exploded";
         }
         else if(weight > originWeight) {
