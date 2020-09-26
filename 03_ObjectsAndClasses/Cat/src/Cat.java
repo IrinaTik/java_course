@@ -38,32 +38,36 @@ public class Cat
     }
 
     public void pee() {
-        if (!declareDead()) {
+        if (isAlive) {
             weight = weight - 1;
             System.out.println("Мама-мия! Итальяно писсуаро!");
+            declareDead();
         }
     }
 
     public void meow()
     {
-        if (!declareDead()) {
+        if (isAlive) {
             weight = weight - 1;
             System.out.println("Meow");
+            declareDead();
         }
     }
 
     public void feed(Double amount)
     {
-        if (!declareDead()) {
+        if (isAlive) {
             weight = weight + amount;
             foodAmount = foodAmount + amount;
+            declareDead();
         }
     }
 
     public void drink(Double amount)
     {
-        if (!declareDead()) {
+        if (isAlive) {
             weight = weight + amount;
+            declareDead();
         }
     }
 
@@ -71,7 +75,7 @@ public class Cat
         return (!(weight < MIN_WEIGHT)) && (!(weight > MAX_WEIGHT));
     }
     
-    private boolean declareDead() {
+    private void declareDead() {
         if (!isAlive(weight)) {
             // если еще не проверяли, жив кот или нет
             if (isAlive) {
@@ -79,9 +83,6 @@ public class Cat
                 isAlive = false;
                 catCount--;
             }
-            return true;
-        } else {
-            return false;
         }
     }
 
