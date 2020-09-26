@@ -19,12 +19,17 @@ public class Imagine {
         carCount = computeCarCount();
 
         // вывод результата
-        output(boxesLeftCount);
+//        output(boxesLeftCount);
+//        System.out.println();
+//        System.out.println("Необходимо:");
+//        System.out.println("грузовиков - " + carCount + " шт.");
+//        System.out.println("контейнеров - " + containerCount + " шт.");
+//        System.out.println(boxesLeftCount);
+        output2(inputBoxCount);
         System.out.println();
         System.out.println("Необходимо:");
         System.out.println("грузовиков - " + carCount + " шт.");
         System.out.println("контейнеров - " + containerCount + " шт.");
-//        System.out.println(boxesLeftCount);
     }
 
     private static int computeContainerCount(int boxesLeft, int boxesAll) {
@@ -74,4 +79,21 @@ public class Imagine {
         }
     }
 
+    private static void output2(int allBoxes) {
+        int boxN = 1;
+        int carN = 0;
+        int containerN = 0;
+        while (boxN <= allBoxes) {
+            if (boxN % (MAX_BOX_COUNT * MAX_CONTAINER_COUNT) == 1) {
+                carN++;
+                System.out.println("Грузовик " + carN + ": ");
+            }
+            if ((boxN % MAX_BOX_COUNT) == 1) {
+                containerN++;
+                System.out.println("\tКонтейнер " + containerN + ": ");
+            }
+            System.out.println("\t\tЯщик " + boxN);
+            boxN++;
+        }
+    }
 }

@@ -18,8 +18,8 @@ public class GeometryCalculator {
     // перед расчетом площади рекомендуется проверить возможен ли такой треугольник
     // методом isTriangleRightAngled, если невозможен вернуть -1.0
     public static double getTriangleSquare(double a, double b, double c) {
-        double p = (a + b + c) / 2;
         if (isTriangleRightAngled(a, b, c)) {
+            double p = (a + b + c) / 2;
             return sqrt(p * (p - a) * (p - b) * (p - c));
         } else {
             return -1.0;
