@@ -10,7 +10,7 @@ public class Intro {
         while (true) {
             String str = reader.readLine();
 
-            String[] arrStr = str.split(" ");
+            String[] arrStr = str.split("\\s");
 
             if (arrStr.length < 3) {
                 if ((arrStr.length == 2) && (!arrStr[1].contains("вна")) && (!arrStr[1].contains("вич"))) {

@@ -1,7 +1,7 @@
 public class Secret {
 
     public static void main(String[] args) {
-        String safe = searchAndReplaceDiamonds("Номер кредитной карты <4008 1234 5678> 8912", "***");
+        String safe = searchAndReplaceDiamondsRegex("Номер кредитной карты <4008 1234 5678> 8912 <123> 5678 <9999> 2", "***");
         System.out.println(safe);
     }
 
@@ -10,6 +10,10 @@ public class Secret {
         int lIndex = text.indexOf(">");
         String subStr = text.substring(fIndex, lIndex + 1);
         return text.replace(subStr, placeholder);
+    }
+
+    private static String searchAndReplaceDiamondsRegex(String text, String placeholder) {
+        return text.replaceAll("<.+?>", placeholder);
     }
 
 }

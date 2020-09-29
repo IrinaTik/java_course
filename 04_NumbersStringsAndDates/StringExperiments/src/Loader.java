@@ -6,13 +6,21 @@ public class Loader
 
         System.out.println(text);
 
-        int firstComma = text.indexOf(',');
-        int lastComma = text.lastIndexOf(',');
-        String str1 = text.substring(0, firstComma).trim();
-        String str2 = text.substring(firstComma + 1, lastComma).trim();
-        String str3 = text.substring(lastComma + 1).trim();
+//        int firstComma = text.indexOf(',');
+//        int lastComma = text.lastIndexOf(',');
+//        String str1 = text.substring(0, firstComma).trim();
+//        String str2 = text.substring(firstComma + 1, lastComma).trim();
+//        String str3 = text.substring(lastComma + 1).trim();
+//        System.out.println("Суммарный заработок: " + (getIntFromText(str1) + getIntFromText(str2) + getIntFromText(str3)));
 
-        System.out.println("Суммарный заработок: " + (getIntFromText(str1) + getIntFromText(str2) + getIntFromText(str3)));
+        String[] strings = text.split(",\\s");
+
+        int sum = 0;
+        for (int i = 0; i < strings.length; i++) {
+            sum += getIntFromText(strings[i]);
+        }
+
+        System.out.println("Суммарный заработок: " + sum);
     }
 
     private static Integer getIntFromText(String str) {
