@@ -22,14 +22,24 @@ public class PhoneBook {
 
     }
 
-    private static void executeQuery(Map<String, String> map, String query) {
-        if (map.containsKey(query)) {
+    private static void executeQuery(Map<String, String> map, String name) {
+        if (map.containsValue(name)) {
             // выводим инфу о контакте
-            System.out.println(query + " => " + nicePhoneOutput(map.get(query)));
+            String contactName = searchforContact(map, name);
+            System.out.println(name + " => " + nicePhoneOutput(contactName));
             return;
         }
         // вносим новую запись в базу
-        inputNewEntry(map, query);
+        inputNewEntry(map, name);
+    }
+
+    private static String searchforContact(Map<String, String> map, String name) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getValue().equals(name)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     private static void inputNewEntry(Map<String, String> map, String query) {
@@ -42,7 +52,7 @@ public class PhoneBook {
                 return;
             }
             if (isPhoneCorrect(phone)) {
-                map.put(query, unifyPhone(phone));
+                map.put(unifyPhone(phone), query);
                 System.out.println("Acknowledged");
                 return;
             } else {
@@ -74,17 +84,17 @@ public class PhoneBook {
 
     private static void baseOutput(Map<String, String> map) {
         for (String key : map.keySet()) {
-            System.out.println(key + " => " + nicePhoneOutput(map.get(key)));
+            System.out.println(map.get(key) + " => " + nicePhoneOutput(key));
         }
     }
 
     private static TreeMap<String, String> initialize() {
         TreeMap<String, String> map = new TreeMap<>();
-        map.put("Иванов","79851112233");
-        map.put("Петров","79854145577");
-        map.put("Сидоров","79857559088");
-        map.put("Кац","79857812236");
-        map.put("Плахов","79994567890");
+        map.put("79851112233","Иванов");
+        map.put("79854145577","Петров");
+        map.put("79857559088","Сидоров");
+        map.put("79857812236","Кац");
+        map.put("79994567890","Плахов");
         return map;
     }
 }
