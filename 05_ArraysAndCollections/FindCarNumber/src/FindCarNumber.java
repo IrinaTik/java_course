@@ -3,7 +3,7 @@ import java.util.*;
 public class FindCarNumber {
 
     private static final int MAX_REGION = 199;
-    private static final String[] LETTERS = {"С", "М", "Т", "В", "А", "Р", "О", "Н", "Е", "У"};
+    private static final String[] LETTERS = {"C", "M", "T", "B", "A", "P", "O", "H", "E", "Y"};
 
     public static void main(String[] args) {
 
@@ -13,21 +13,43 @@ public class FindCarNumber {
         TreeSet<String> tsetCars = new TreeSet<>();
         tsetCars.addAll(arrCars);
 
+        String query = getQuery();
 
-
+        System.out.print("Поиск перебором: ");
+        doSearch(arrCars, query);
+        System.out.print("Бинарный поиск: ");
+        searchBinary(arrCars, query);
+        System.out.print("Поиск в HashSet: ");
+        doSearch(hsetCars, query);
+        System.out.print("Поиск в TreeSet: ");
+        doSearch(tsetCars, query);
     }
 
-    private static boolean searchBinary(List<String> list, String query) {
-        if (Collections.binarySearch(list, query) == -1) {
-            return false;
-        } else {
-            return true;
-        }
+    private static void doSearch(Collection<String> collection, String query) {
+        long start = getTime();
+        System.out.print(searchCollection(collection, query) ? "номер найден, " : "номер не найден, ");
+        long end = getTime();
+        System.out.println("поиск занял " + getDuration(start, end) + " нс");
     }
 
-    private static boolean searchSet(Set<String> set, String query) {
+    private static long getTime() {
+        return System.nanoTime();
+    }
 
-        return false;
+    private static long getDuration(long start, long end) {
+        return (end - start);
+    }
+
+    private static boolean searchCollection(Collection<String> collection, String query) {
+        return collection.contains(query);
+    }
+
+    private static void searchBinary(List<String> list, String query) {
+        Collections.sort(list);
+        long start = getTime();
+        System.out.print(Collections.binarySearch(list, query) >= 0 ? "номер найден, " : "номер не найден, ");
+        long end = getTime();
+        System.out.println("поиск занял " + getDuration(start, end) + " нс");
     }
 
     private static ArrayList<String> initialize() {
@@ -50,7 +72,7 @@ public class FindCarNumber {
         }
     }
 
-    private static ArrayList<String> fillArray(int r, int i, ArrayList<String> list) {
+    private static void fillArray(int r, int i, ArrayList<String> list) {
         for (int first = 0; first < LETTERS.length; first++) {
             for (int second = 0; second < LETTERS.length; second++) {
                 for (int third = 0; third < LETTERS.length; third++) {
@@ -59,7 +81,6 @@ public class FindCarNumber {
                 }
             }
         }
-        return list;
     }
 
     public static String getQuery() {
