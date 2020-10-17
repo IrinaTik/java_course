@@ -1,6 +1,4 @@
-import java.util.Map;
-import java.util.Scanner;
-import java.util.TreeMap;
+import java.util.*;
 
 public class PhoneBook {
 
@@ -25,21 +23,33 @@ public class PhoneBook {
     private static void executeQuery(Map<String, String> map, String name) {
         if (map.containsValue(name)) {
             // выводим инфу о контакте
-            String contactName = searchforContact(map, name);
-            System.out.println(name + " => " + nicePhoneOutput(contactName));
+            ArrayList<String> contactPhones = searchforContact(map, name);
+            contactInfoOutput(name, contactPhones);
             return;
         }
         // вносим новую запись в базу
         inputNewEntry(map, name);
     }
 
-    private static String searchforContact(Map<String, String> map, String name) {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getValue().equals(name)) {
-                return entry.getKey();
+    private static void contactInfoOutput(String name, ArrayList<String> phoneList) {
+        System.out.print(name + " => ");
+        for (int i = 0; i < phoneList.size(); i++) {
+            if (i == 0) {
+                System.out.println(nicePhoneOutput(phoneList.get(i)));
+            } else {
+                System.out.println("\t=> " + nicePhoneOutput(phoneList.get(i)));
             }
         }
-        return null;
+    }
+
+    private static ArrayList<String> searchforContact(Map<String, String> map, String name) {
+        ArrayList<String> phoneList = new ArrayList<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getValue().equals(name)) {
+                 phoneList.add(entry.getKey());
+            }
+        }
+        return phoneList;
     }
 
     private static void inputNewEntry(Map<String, String> map, String query) {
@@ -83,18 +93,27 @@ public class PhoneBook {
     }
 
     private static void baseOutput(Map<String, String> map) {
-        for (String key : map.keySet()) {
-            System.out.println(map.get(key) + " => " + nicePhoneOutput(key));
+        TreeSet<String> names = makeSet(map);
+        for (String name : names) {
+            executeQuery(map, name);
         }
+    }
+
+    private static TreeSet<String> makeSet(Map<String, String> map) {
+        TreeSet<String> set = new TreeSet<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            set.add(entry.getValue());
+        }
+        return set;
     }
 
     private static TreeMap<String, String> initialize() {
         TreeMap<String, String> map = new TreeMap<>();
         map.put("79851112233","Иванов");
+        map.put("79994567890","Кац");
         map.put("79854145577","Петров");
         map.put("79857559088","Сидоров");
         map.put("79857812236","Кац");
-        map.put("79994567890","Плахов");
         return map;
     }
 }
