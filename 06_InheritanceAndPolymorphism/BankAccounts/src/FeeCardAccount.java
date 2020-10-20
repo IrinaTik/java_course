@@ -8,8 +8,8 @@ public class FeeCardAccount extends BankAccount{
     }
 
     @Override
-    public void withdraw(double amount) {
+    public boolean withdraw(double amount) {
         double amountWithFee = amount + amount * FEE;
-        super.withdraw(amountWithFee);
+        return super.withdraw(amountWithFee);
     }
 }

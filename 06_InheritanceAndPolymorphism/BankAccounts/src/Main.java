@@ -1,5 +1,3 @@
-import java.util.Calendar;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -13,11 +11,12 @@ public class Main {
         FeeCardAccount feeCardAccount = new FeeCardAccount(1500);
         feeCardAccount.deposit(25);
         feeCardAccount.withdraw(25);
-        feeCardAccount.getMoneyAmount();
+        feeCardAccount.getBalance();
 
         System.out.println("==============================");
 
         feeCardAccount.send(depositaryAccount, 500);
+        depositaryAccount.send(feeCardAccount, 100);
     }
 
 }

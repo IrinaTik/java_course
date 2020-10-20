@@ -4,8 +4,6 @@ import java.util.Calendar;
 public class DepositaryAccount extends BankAccount {
 
     private Calendar lastActionDate;
-    private static final long DAY_IN_MS = 24 * 60 * 60 * 1000;
-    private static final long MONTH_IN_MS = 30 * DAY_IN_MS;
 
     public DepositaryAccount(double moneyAmount) {
         super(moneyAmount);
@@ -19,26 +17,27 @@ public class DepositaryAccount extends BankAccount {
     }
 
     private boolean isActionPossible() {
-        Calendar currentDate = Calendar.getInstance();
-        long duration = currentDate.getTimeInMillis() - lastActionDate.getTimeInMillis();
-        return (duration - MONTH_IN_MS > 0);
+        Calendar monthAgo = Calendar.getInstance();
+        monthAgo.add(Calendar.MONTH, -1);
+        return monthAgo.compareTo(lastActionDate) >= 0;
     }
 
     private Calendar nextDate() {
         Calendar nextActionDate = Calendar.getInstance();
-        int nextMonth = lastActionDate.get(Calendar.MONTH) + 1;
-        nextActionDate.set(lastActionDate.get(Calendar.YEAR), nextMonth, lastActionDate.get(Calendar.DATE));
+        nextActionDate.setTime(lastActionDate.getTime());
+        nextActionDate.add(Calendar.MONTH, 1);
         return nextActionDate;
 
     }
 
     @Override
-    public void withdraw(double amount) {
+    public boolean withdraw(double amount) {
         if (isActionPossible()) {
-            super.withdraw(amount);
+            return super.withdraw(amount);
         } else {
             SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
             System.out.println("You tried to withdraw TOO SOON! Next withdrawal will be avaliable at " + format.format(nextDate().getTime()));
+            return false;
         }
     }
 
