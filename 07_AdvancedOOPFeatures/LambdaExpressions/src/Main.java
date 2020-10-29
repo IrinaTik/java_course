@@ -14,20 +14,12 @@ public class Main
     {
         ArrayList<Employee> staff = loadStaffFromFile();
 
-        Comparator<Employee> comparator1 = Comparator.comparing(Employee::getSalary).thenComparing(Employee::getName);
-        Collections.sort(staff, comparator1);
+        Collections.sort(staff, Comparator.comparing(Employee::getSalary).thenComparing(Employee::getName));
 
-        for (Employee employee : staff) {
-            System.out.println(employee);
-        }
-        
-        Comparator<Employee> comparator2 = Comparator.comparing(Employee::getSalary, Comparator.reverseOrder()).thenComparing(Employee::getName);
-        Collections.sort(staff, comparator2);
-
-        System.out.println("===============");
-        for (Employee employee : staff) {
-            System.out.println(employee);
-        }
+        staff.stream().sorted(Comparator.comparing(Employee::getSalary).thenComparing(Employee::getName)).forEach(System.out::println);
+        System.out.println("========In reverse========");
+        staff.stream().sorted(Comparator.comparing(Employee::getSalary, Comparator.reverseOrder())
+                .thenComparing(Employee::getName, Comparator.reverseOrder())).forEach(System.out::println);
 
     }
 
