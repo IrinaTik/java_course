@@ -12,9 +12,8 @@ public class Main {
 
         Collections.sort(employees, (e1, e2) -> {
             int salaryComparison = e1.getSalary().compareTo(e2.getSalary());
-            int nameComparison = e1.getName().compareTo(e2.getName());
             if (salaryComparison == 0) {
-                return nameComparison;
+                return e1.getName().compareTo(e2.getName());
             } else {
                 return salaryComparison;
             }
