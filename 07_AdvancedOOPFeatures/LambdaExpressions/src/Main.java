@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Main
 {
-    private static String staffFile = "D:\\Korvin\\java\\Skillbox\\DZ\\repository\\java_basics\\07_AdvancedOOPFeatures\\LambdaExpressions\\data\\staff.txt";
+    private static String staffFile = "data/staff.txt";
     private static String dateFormat = "dd.MM.yyyy";
 
     public static void main(String[] args) {
