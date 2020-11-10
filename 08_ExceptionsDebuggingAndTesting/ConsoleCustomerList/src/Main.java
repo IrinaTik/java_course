@@ -4,7 +4,7 @@ public class Main
 {
     private static String addCommand = "add Василий Петров " +
             "vasily.petrov@gmail.com +79215637722";
-    private static String deleteCommand = "delete Василий Петров";
+    private static String deleteCommand = "remove Василий Петров";
     private static String commandExamples = "\t" + addCommand + "\n" +
             "\tlist\n\tcount\n\t" + deleteCommand;
     private static String commandError = "Wrong command! Available command examples: \n" +
@@ -45,8 +45,8 @@ public class Main
         try {
             executor.removeCustomer(tokens[1]);
         } catch (IndexOutOfBoundsException ex) {
-            System.out.println("Wrong delete command format! Example: \n" + deleteCommand);
-        } catch (IllegalArgumentException ex) {
+            System.out.println("Wrong remove command format! Example: \n" + deleteCommand);
+        } catch (RuntimeException ex) {
             System.out.println(ex.getMessage());
         }
     }
@@ -54,10 +54,10 @@ public class Main
     private static void addCustomer(CustomerStorage executor, String[] tokens) {
         try {
             executor.addCustomer(tokens[1]);
-        } catch (IllegalArgumentException ex) {
-            System.out.println(ex.getMessage());
         } catch (IndexOutOfBoundsException ex) {
             System.out.println("Wrong add command format! Example: \n" + addCommand);
+        } catch (RuntimeException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 }

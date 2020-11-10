@@ -1,3 +1,5 @@
+import Exceptions.NameFormatException;
+
 import java.util.HashMap;
 
 public class CustomerStorage
@@ -21,11 +23,11 @@ public class CustomerStorage
         storage.values().forEach(System.out::println);
     }
 
-    public void removeCustomer(String name) throws IndexOutOfBoundsException
+    public void removeCustomer(String name) throws NameFormatException
     {
         String[] fullName = name.split("\\s+");
         if (fullName.length != 2) {
-            throw new IllegalArgumentException("Wrong name format! Please provide first name and last name.");
+            throw new NameFormatException("Wrong name format! Please provide first name and last name.");
         }
         storage.remove(name);
     }
