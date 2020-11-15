@@ -1,5 +1,7 @@
 import core.Line;
 import core.Station;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -12,6 +14,10 @@ import java.util.Scanner;
 
 public class Main
 {
+    private static final Logger ROOT_LOGGER = LogManager.getRootLogger();
+    private static final Logger WARN_LOGGER = LogManager.getLogger("WarnLogger");
+    private static final Logger ERROR_LOGGER = LogManager.getLogger("ErrorLogger");
+
     private static String dataFile = "08_ExceptionsDebuggingAndTesting/SPBMetro/src/main/resources/map.json";
     private static Scanner scanner;
 
@@ -25,15 +31,20 @@ public class Main
         scanner = new Scanner(System.in);
         for(;;)
         {
-            Station from = takeStation("Введите станцию отправления:");
-            Station to = takeStation("Введите станцию назначения:");
+            try {
+                Station from = takeStation("Введите станцию отправления:");
+                Station to = takeStation("Введите станцию назначения:");
 
-            List<Station> route = calculator.getShortestRoute(from, to);
-            System.out.println("Маршрут:");
-            printRoute(route);
+                List<Station> route = calculator.getShortestRoute(from, to);
+                System.out.println("Маршрут:");
+                printRoute(route);
 
-            System.out.println("Длительность: " +
-                RouteCalculator.calculateDuration(route) + " минут");
+                System.out.println("Длительность: " +
+                        RouteCalculator.calculateDuration(route) + " минут");
+            } catch (Exception ex) {
+                ERROR_LOGGER.error("Huston, we have a problem\n\t" + ex.getClass());
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -71,8 +82,12 @@ public class Main
             String line = scanner.nextLine().trim();
             Station station = stationIndex.getStation(line);
             if(station != null) {
+                ROOT_LOGGER.info(station.getName());
                 return station;
             }
+            WARN_LOGGER.warn(line);
+            // для получения ошибки в try/catch
+//            System.out.println(station.getName());
             System.out.println("Станция не найдена :(");
         }
     }
