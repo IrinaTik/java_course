@@ -9,24 +9,23 @@
   <appenders>
     <File name="SearchFile" fileName="${fStations}">
       <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %msg%n"/>
+      <MarkerFilter  marker="info" onMatch="ACCEPT" onMismatch="DENY"/>
     </File>
     <File name="WrongSearchFile" fileName="${fWrongStations}">
       <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %msg%n"/>
+      <MarkerFilter  marker="warn" onMatch="ACCEPT" onMismatch="DENY"/>
     </File>
     <File name="ErrorFile" fileName="${fErrors}">
       <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level @line:%L %msg%n"/>
+      <MarkerFilter  marker="error" onMatch="ACCEPT" onMismatch="DENY"/>
     </File>
   </appenders>
 
   <loggers>
     <root level="info" additivity="false">
-      <appender-ref ref="SearchFile"/>
+      <appender-ref ref="SearchFile" level="info"/>
+      <appender-ref ref="WrongSearchFile" level="warn" />
+      <appender-ref ref="ErrorFile" level="error"/>
     </root>
-    <logger name="WarnLogger" level="warn" additivity="false">
-      <appender-ref ref="WrongSearchFile"/>
-    </logger>
-    <logger name="ErrorLogger" level="error" additivity="false">
-      <appender-ref ref="ErrorFile"/>
-    </logger>
   </loggers>
 </configuration>

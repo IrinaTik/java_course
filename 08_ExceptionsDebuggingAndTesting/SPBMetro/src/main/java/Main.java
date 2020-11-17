@@ -2,6 +2,8 @@ import core.Line;
 import core.Station;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,8 +17,9 @@ import java.util.Scanner;
 public class Main
 {
     private static final Logger ROOT_LOGGER = LogManager.getRootLogger();
-    private static final Logger WARN_LOGGER = LogManager.getLogger("WarnLogger");
-    private static final Logger ERROR_LOGGER = LogManager.getLogger("ErrorLogger");
+    private static final Marker ERROR_MARKER = MarkerManager.getMarker("error");
+    private static final Marker WARN_MARKER = MarkerManager.getMarker("warn");
+    private static final Marker INFO_MARKER = MarkerManager.getMarker("info");
 
     private static String dataFile = "08_ExceptionsDebuggingAndTesting/SPBMetro/src/main/resources/map.json";
     private static Scanner scanner;
@@ -42,7 +45,7 @@ public class Main
                 System.out.println("Длительность: " +
                         RouteCalculator.calculateDuration(route) + " минут");
             } catch (Exception ex) {
-                ERROR_LOGGER.error("Huston, we have a problem\n\t" + ex.getClass());
+                ROOT_LOGGER.error(ERROR_MARKER, "Huston, we have a problem\n\t {}", ex.getClass());
                 ex.printStackTrace();
             }
         }
@@ -82,10 +85,10 @@ public class Main
             String line = scanner.nextLine().trim();
             Station station = stationIndex.getStation(line);
             if(station != null) {
-                ROOT_LOGGER.info(station.getName());
+                ROOT_LOGGER.info(INFO_MARKER, station.getName());
                 return station;
             }
-            WARN_LOGGER.warn(line);
+            ROOT_LOGGER.warn(WARN_MARKER, line);
             // для получения ошибки в try/catch
 //            System.out.println(station.getName());
             System.out.println("Станция не найдена :(");
