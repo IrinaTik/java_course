@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -11,13 +13,12 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            long dirSize = getDirSize(getDirectoryPath());
-            System.out.println("Размер папки: ");
-            System.out.println(dirSize + " bytes");
-            System.out.println(getSizeInKB(dirSize) + " Kb");
-            System.out.println(getSizeInMB(dirSize) + " Mb");
-            System.out.println(getSizeInGB(dirSize) + " Gb");
-        } catch (IOException e) {
+            File directory = new File(getDirectoryPath());
+            System.out.println("Размер папки (без рекурсии): "
+                    + readableSizes(getDirSize_woutRecursion(directory)));
+            System.out.println("Размер папки (с рекурсией): "
+                    + readableSizes(getDirSize_wListFiles(directory)));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -36,25 +37,62 @@ public class Main {
         return dirPath;
     }
 
-    public static long getDirSize(String path) throws IOException {
+    public static long getDirSize_wListFiles(File dir) {
+        long sum = 0;
+
+        File[] arrFiles = dir.listFiles();
+        for (File arrFile : arrFiles) {
+            if (arrFile.isDirectory()) {
+                sum += getDirSize_wListFiles(arrFile);
+            } else {
+                sum += arrFile.length();
+            }
+        }
+
+        return sum;
+    }
+
+    public static long getDirSize_woutRecursion(File file) {
+        long sum = 0;
+
+        List<File> dir = new ArrayList<>();
+        if (file.isDirectory()) {
+            dir.add(file);
+            while (dir.size() > 0) {
+                File folder = dir.get(0);
+                dir.remove(0);
+                File[] folderFiles = folder.listFiles();
+                for (File folderFile : folderFiles) {
+                    if (folderFile.isDirectory()) {
+                        dir.add(folderFile);
+                    } else {
+                        sum += folderFile.length();
+                    }
+                }
+            }
+        } else {
+            sum += file.length();
+        }
+
+        return sum;
+    }
+
+    public static long getDirSize_wFiles(File file) throws IOException {
+        String path = file.getAbsolutePath();
         return Files.walk(Paths.get(path), 10)
                 .filter(Files::isRegularFile)
                 .map(p -> p.toFile().length())
                 .reduce(Long::sum).orElse((long) 0);
     }
 
-    private static String getSizeInKB(long size) {
-        return DECIMAL_FORMAT.format((double) size/1024);
+    private static String readableSizes(long size) {
+        if (size == 0) {
+            return "0";
+        }
+        final String[] units = new String[] {"B", "KB", "MB", "GB", "TB"};
+        int digitGroups = (int)(Math.log10(size) / Math.log10(1024));
+        return DECIMAL_FORMAT.format(size / Math.pow(1024, digitGroups))
+                + " " + units[digitGroups];
     }
-
-    private static String getSizeInMB(long size) {
-        return DECIMAL_FORMAT.format((double) size/(1024*1024));
-    }
-
-    private static String getSizeInGB(long size) {
-        return DECIMAL_FORMAT.format((double) size/(1024*1024*1024));
-    }
-
-
 
 }
