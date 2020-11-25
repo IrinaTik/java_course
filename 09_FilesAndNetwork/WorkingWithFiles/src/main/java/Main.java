@@ -3,9 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -27,7 +25,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         String dirPath;
         while (true) {
-            dirPath = scanner.next();
+            dirPath = scanner.nextLine();
             File dir = Paths.get(dirPath).toFile();
             if (dir.exists() && dir.isDirectory()) {
                 break;
@@ -55,23 +53,15 @@ public class Main {
     public static long getDirSize_woutRecursion(File file) {
         long sum = 0;
 
-        List<File> dir = new ArrayList<>();
-        if (file.isDirectory()) {
-            dir.add(file);
-            while (dir.size() > 0) {
-                File folder = dir.get(0);
-                dir.remove(0);
-                File[] folderFiles = folder.listFiles();
-                for (File folderFile : folderFiles) {
-                    if (folderFile.isDirectory()) {
-                        dir.add(folderFile);
-                    } else {
-                        sum += folderFile.length();
-                    }
-                }
+        List<File> dir = new ArrayList<>(Collections.singleton(file));
+
+        for (int i = 0; i < dir.size(); i++) {
+            File folderFile = dir.get(i);
+            if (folderFile.isDirectory()) {
+                dir.addAll(Arrays.asList(folderFile.listFiles()));
+            } else if (folderFile.isFile()) {
+                sum += folderFile.length();
             }
-        } else {
-            sum += file.length();
         }
 
         return sum;
