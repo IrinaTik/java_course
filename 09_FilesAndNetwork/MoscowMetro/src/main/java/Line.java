@@ -5,7 +5,7 @@ public class Line {
 
     private String name;
     private String number;
-    private List<String> stations;
+    private List<Station> stations;
 
     public Line(String name, String number) {
         this.name = name;
@@ -29,20 +29,28 @@ public class Line {
         this.number = number;
     }
 
-    public List<String> getStations() {
+    public Station getStation(String name) {
+        return this.stations.stream().filter(station -> station.getName().equals(name)).findAny().orElse(null);
+    }
+
+    public List<Station> getStations() {
         return stations;
     }
 
-    public void addStation(String stationName) {
-        stations.add(stationName);
+    public void addStations(List<Station> stations) {
+        stations.addAll(stations);
+    }
+
+    public void addStation(Station station) {
+        stations.add(station);
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("Линия: " + name + "\nНомер: " + number + "\nСтанции:\n");
-        for (String station : stations) {
-            builder.append("\t" + station + "\n");
-        }
+        StringBuilder builder = new StringBuilder("Линия: " + name + "\nНомер: " + number + "\nСтанции: " + stations.size());
+//        for (Station station : stations) {
+//            builder.append("\t" + station.toString() + "\n");
+//        }
         return builder.toString();
     }
 }
