@@ -1,3 +1,5 @@
+package DataModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +45,9 @@ public class Station {
     }
 
     public String consToString() {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder("\t\tПереход на: ");
         for (Station conStation : this.connections) {
-            builder.append("\t\t" + conStation.getName() + "(" + conStation.getLine().getNumber() + ")\n");
+            builder.append("\n\t\t\t" + conStation.getName() + "(" + conStation.getLine().getNumber() + ")");
         }
         return builder.toString();
     }

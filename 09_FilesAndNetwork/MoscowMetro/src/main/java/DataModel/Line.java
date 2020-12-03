@@ -1,3 +1,5 @@
+package DataModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +49,6 @@ public class Line {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("Линия: " + name + "\nНомер: " + number + "\nСтанции: " + stations.size());
-//        for (Station station : stations) {
-//            builder.append("\t" + station.toString() + "\n");
-//        }
-        return builder.toString();
+        return name + "\nНомер: " + number + "\nСтанции: " + stations.size();
     }
 }
