@@ -1,6 +1,7 @@
 import DataModel.Line;
 import DataModel.Metro;
 import DataModel.Station;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -11,6 +12,20 @@ import java.util.regex.Pattern;
 
 public class HTMLParsing {
 
+    private static final String SITE_URL = "https://www.moscowmap.ru/metro.html#lines";
+
+    public static Metro parseHTML() {
+        Metro metro = new Metro();
+        try {
+            Document doc = Jsoup.connect(SITE_URL).maxBodySize(0).get();
+            HTMLParsing.fillTheLinesInfo(doc, metro);
+            HTMLParsing.fillTheStationsInfo(doc, metro);
+            HTMLParsing.fillConnections(doc, metro);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return metro;
+    }
 
     public static void fillTheLinesInfo(Document doc, Metro metro) {
         Elements linesInfo = doc.select("span[class*=\"js-metro-line\"]");

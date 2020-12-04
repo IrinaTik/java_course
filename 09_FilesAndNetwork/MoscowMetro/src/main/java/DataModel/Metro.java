@@ -23,7 +23,12 @@ public class Metro {
         this.lines.add(line);
     }
 
-    public void addSeveralLines(List<Line> lines) {
-        this.lines.addAll(lines);
+    public void output() {
+        for (Line line : this.getLines()) {
+            System.out.println(line.toString());
+            for (Station station : line.getStations()) {
+                System.out.println("\t" + station.toString());
+            }
+        }
     }
 }

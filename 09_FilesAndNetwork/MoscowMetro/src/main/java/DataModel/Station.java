@@ -2,6 +2,7 @@ package DataModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Station {
 
@@ -19,16 +20,8 @@ public class Station {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Line getLine() {
         return line;
-    }
-
-    public void setLine(Line line) {
-        this.line = line;
     }
 
     public List<Station> getConnections() {
@@ -36,11 +29,13 @@ public class Station {
     }
 
     public void addConnection(Station connection) {
-        if (!this.connections.contains(connection)) {
-            this.connections.add(connection);
-        }
-        if (!connection.getConnections().contains(this)) {
-            connection.addConnection(this);
+        if (this.line != connection.getLine()) {
+            if (!this.connections.contains(connection)) {
+                this.connections.add(connection);
+            }
+            if (!connection.getConnections().contains(this)) {
+                connection.addConnection(this);
+            }
         }
     }
 
@@ -50,6 +45,20 @@ public class Station {
             builder.append("\n\t\t\t" + conStation.getName() + "(" + conStation.getLine().getNumber() + ")");
         }
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Station station = (Station) o;
+        return Objects.equals(name, station.name) &&
+                Objects.equals(line, station.line);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, line);
     }
 
     @Override

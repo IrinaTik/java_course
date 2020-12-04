@@ -19,17 +19,11 @@ public class Line {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getNumber() {
         return number;
     }
 
-    public void setNumber(String number) {
-        this.number = number;
-    }
 
     public Station getStation(String name) {
         return this.stations.stream().filter(station -> station.getName().equals(name)).findAny().orElse(null);
@@ -40,7 +34,7 @@ public class Line {
     }
 
     public void addStations(List<Station> stations) {
-        stations.addAll(stations);
+        this.stations.addAll(stations);
     }
 
     public void addStation(Station station) {
