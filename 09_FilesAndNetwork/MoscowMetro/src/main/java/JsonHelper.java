@@ -27,6 +27,7 @@ public class JsonHelper {
             file.write(jMetro.toJSONString());
             file.flush();
             file.close();
+            System.out.println("Writing to JSON file " + JSONFILE_PATH + " is complete");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -53,25 +54,55 @@ public class JsonHelper {
         return jStations;
     }
 
+//        // TODO connections: do smth with double stream and split the code for god's sake
+
+//    public static JSONArray connectionsToJSON(Metro metro) {
+//        JSONArray jConnections = new JSONArray();
+//        Set<Station> allStations = new HashSet<>();
+//        metro.getLines().stream()
+//                .map(Line::getStations)
+//                .forEach(stations -> stations.stream()
+//                        .filter(station -> !station.getConnections().isEmpty())
+//                        .forEach(allStations::add));
+//        for (Station station : allStations) {
+//            JSONArray jConnectionNode = new JSONArray();
+//            Set<Station> connectionNode = new HashSet<>();
+//            station.getConnections().stream()
+//                        .forEach(connection -> connectionNode.add(connection));
+//            connectionNode.add(station);
+//            connectionNode.stream().map(JsonHelper::createJSONObj).forEach(jConnectionNode::add);
+//            jConnectionNode.add(createJSONObj(station));
+//            jConnections.add(jConnectionNode);
+//        }
+//        return jConnections;
+//    }
+
     public static JSONArray connectionsToJSON(Metro metro) {
         JSONArray jConnections = new JSONArray();
-        Set<Station> allStations = new HashSet<>();
         Set<Station> connectedStations = new HashSet<>();
-        metro.getLines().stream().map(Line::getStations).forEach(stations -> stations.stream()
-                .filter(station -> !station.getConnections().isEmpty()).forEach(allStations::add));
+        Set<Station> allStations = getStationsWithConnections(metro);
         for (Station station : allStations) {
             if (connectedStations.contains(station)) {
                 continue;
             }
-            JSONArray jStAr = new JSONArray();
-            jStAr.add(createJSONObj(station));
+            JSONArray jConnectionNode = new JSONArray();
+            jConnectionNode.add(createJSONObj(station));
             station.getConnections().forEach(connection -> {
                 connectedStations.add(connection);
-                jStAr.add(createJSONObj(connection));
+                jConnectionNode.add(createJSONObj(connection));
             });
-            jConnections.add(jStAr);
+            jConnections.add(jConnectionNode);
         }
         return jConnections;
+    }
+
+    private static Set<Station> getStationsWithConnections(Metro metro) {
+        Set<Station> allStations = new HashSet<>();
+        metro.getLines().stream()
+                .map(Line::getStations)
+                .forEach(stations -> stations.stream()
+                .filter(station -> !station.getConnections().isEmpty()).forEach(allStations::add));
+        return allStations;
     }
 
     private static JSONObject createJSONObj(Station station) {
@@ -92,6 +123,7 @@ public class JsonHelper {
             parseLines(jLines, metro);
             parseStations(jStations, metro);
             parseConnections(jConnections, metro);
+            System.out.println("Reading from JSON file " + JSONFILE_PATH + " is complete");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

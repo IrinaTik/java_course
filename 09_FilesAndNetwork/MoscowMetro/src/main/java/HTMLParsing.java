@@ -21,6 +21,7 @@ public class HTMLParsing {
             HTMLParsing.fillTheLinesInfo(doc, metro);
             HTMLParsing.fillTheStationsInfo(doc, metro);
             HTMLParsing.fillConnections(doc, metro);
+            System.out.println("HTML parsing complete");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
