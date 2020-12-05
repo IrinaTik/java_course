@@ -1,5 +1,6 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.InputStream;
@@ -18,27 +19,17 @@ public class Parser {
 
         try {
             Document document = Jsoup.connect(SITE_URL).get();
-            Elements links = document.select("img[src]");
-            for (int i = 0; i < links.size(); i++) {
-                String link = links.get(i).attr("abs:src");
-                String fileNameOrig = link.substring(link.lastIndexOf('/') + 1);
-                String fileName = fileNameOrig.replaceAll(checkExtension(fileNameOrig), "_");
+            Elements links = document.select("img[src~=.(png|jpe?g|bmp)]");
+            for (Element link : links) {
+                String absLink = link.attr("abs:src");
+                String fileName = absLink.substring(absLink.lastIndexOf('/') + 1);
                 String sPath = TARGET + fileName;
                 Path path = Paths.get(sPath);
-                savePicFromURL(link, path);
+                savePicFromURL(absLink, path);
             }
             System.out.println("Saving images is complete. Check the " + TARGET + " directory");
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
-    }
-
-    private static String checkExtension(String link) {
-        if (link.contains(".jpg") || link.contains(".png")
-                || link.contains(".jpeg") || link.contains(".bmp")) {
-            return "[?=]";
-        } else {
-            return "[?=.]";
         }
     }
 
