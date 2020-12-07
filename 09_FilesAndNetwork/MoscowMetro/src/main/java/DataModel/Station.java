@@ -1,6 +1,9 @@
 package DataModel;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -8,7 +11,8 @@ public class Station {
 
     private String name;
     private Line line;
-    private List<Station> connections;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Connection> connections;
 
     public Station(String name, Line line) {
         this.name = name;
@@ -24,25 +28,24 @@ public class Station {
         return line;
     }
 
-    public List<Station> getConnections() {
+    public List<Connection> getConnections() {
         return connections;
     }
 
-    public void addConnection(Station connection) {
-        if (this.line != connection.getLine()) {
-            if (!this.connections.contains(connection)) {
-                this.connections.add(connection);
-            }
-            if (!connection.getConnections().contains(this)) {
-                connection.addConnection(this);
-            }
+    public void addConnection(Connection connection) {
+        if (!this.connections.contains(connection)) {
+            this.connections.add(connection);
         }
+    }
+
+    public void addConnections(Collection<Connection> connections) {
+        connections.forEach(this::addConnection);
     }
 
     public String consToString() {
         StringBuilder builder = new StringBuilder("\t\tПереход на: ");
-        for (Station conStation : this.connections) {
-            builder.append("\n\t\t\t" + conStation.getName() + "(" + conStation.getLine().getNumber() + ")");
+        for (Connection conStation : this.connections) {
+            builder.append("\n\t\t\t" + conStation.getName() + "(" + conStation.getLineNumber() + ")");
         }
         return builder.toString();
     }
@@ -53,7 +56,8 @@ public class Station {
         if (o == null || getClass() != o.getClass()) return false;
         Station station = (Station) o;
         return Objects.equals(name, station.name) &&
-                Objects.equals(line, station.line);
+                Objects.equals(line, station.line) &&
+                Objects.equals(getConnections().size(), station.getConnections().size());
     }
 
     @Override

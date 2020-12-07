@@ -1,186 +1,148 @@
+import DataModel.Connection;
 import DataModel.Line;
 import DataModel.Metro;
 import DataModel.Station;
-import org.json.simple.JSONArray;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JsonHelper {
 
-    private static final String JSONFILE_PATH = "./09_FilesAndNetwork/MoscowMetro/src/main/resources/MoscowMetroMap.json";
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static void writeToJSON(Metro metro){
-        JSONObject jMetro = new JSONObject();
-        jMetro.put("lines", JsonHelper.linesToJSON(metro));
-        jMetro.put("stations", JsonHelper.stationsToJSON(metro));
-        jMetro.put("connections", JsonHelper.connectionsToJSON(metro));
+    /*
+    ============================ writing JSON ============================
+    */
+
+    public static void writeToJSON(Metro metro, String jsonfilePath){
+        Map<String, Object> metroMap = new HashMap<>();
+        metroMap.put("lines", metro.getLines());
+        metroMap.put("stations", convertStationsToPrettyJSON(metro));
+        metroMap.put("connected stations", convertConnectionsToPrettyJSON(metro));
         try {
-            FileWriter file = new FileWriter(JSONFILE_PATH);
-            file.write(jMetro.toJSONString());
-            file.flush();
-            file.close();
-            System.out.println("Writing to JSON file " + JSONFILE_PATH + " is complete");
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            mapper.writerWithDefaultPrettyPrinter().writeValue(new FileOutputStream(jsonfilePath), metroMap);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public static JSONArray linesToJSON(Metro metro) {
-        JSONArray jLines = new JSONArray();
-        for (Line line : metro.getLines()) {
-            JSONObject jLine = new JSONObject();
-            jLine.put("name", line.getName());
-            jLine.put("number", line.getNumber());
-            jLines.add(jLine);
-        }
-        return jLines;
+    private static List<Station> convertConnectionsToPrettyJSON(Metro metro) {
+        List<Station> connections = new ArrayList<>();
+        metro.getLines()
+                .forEach(line -> line.getStations().stream()
+                        .filter(station -> !station.getConnections().isEmpty())
+                        .forEach(connections::add));
+        return connections;
+
     }
 
-    public static JSONObject stationsToJSON(Metro metro) {
-        JSONObject jStations = new JSONObject();
-        for (Line line : metro.getLines()) {
-            JSONArray jLineStations = new JSONArray();
-            line.getStations().forEach(station -> jLineStations.add(station.getName()));
-            jStations.put(line.getNumber(), jLineStations);
-        }
-        return jStations;
+    private static Map<String, List<String>> convertStationsToPrettyJSON(Metro metro) {
+        Map<String, List<String>> stations = new TreeMap<>(getStationsComparator());
+        metro.getLines().forEach(line -> stations.put(line.getNumber(),
+                line.getStations().stream().map(Station::getName).collect(Collectors.toList())));
+        return stations;
     }
 
-//        // TODO connections: do smth with double stream and split the code for god's sake
-
-//    public static JSONArray connectionsToJSON(Metro metro) {
-//        JSONArray jConnections = new JSONArray();
-//        Set<Station> allStations = new HashSet<>();
-//        metro.getLines().stream()
-//                .map(Line::getStations)
-//                .forEach(stations -> stations.stream()
-//                        .filter(station -> !station.getConnections().isEmpty())
-//                        .forEach(allStations::add));
-//        for (Station station : allStations) {
-//            JSONArray jConnectionNode = new JSONArray();
-//            Set<Station> connectionNode = new HashSet<>();
-//            station.getConnections().stream()
-//                        .forEach(connection -> connectionNode.add(connection));
-//            connectionNode.add(station);
-//            connectionNode.stream().map(JsonHelper::createJSONObj).forEach(jConnectionNode::add);
-//            jConnectionNode.add(createJSONObj(station));
-//            jConnections.add(jConnectionNode);
-//        }
-//        return jConnections;
-//    }
-
-    public static JSONArray connectionsToJSON(Metro metro) {
-        JSONArray jConnections = new JSONArray();
-        Set<Station> connectedStations = new HashSet<>();
-        Set<Station> allStations = getStationsWithConnections(metro);
-        for (Station station : allStations) {
-            if (connectedStations.contains(station)) {
-                continue;
+    private static Comparator<String> getStationsComparator() {
+        return (o1, o2) -> {
+            if (o1.length() > o2.length()) {
+                return 1;
+            } else if (o1.length() < o2.length()) {
+                return -1;
+            } else {
+                return o1.compareTo(o2);
             }
-            JSONArray jConnectionNode = new JSONArray();
-            jConnectionNode.add(createJSONObj(station));
-            station.getConnections().forEach(connection -> {
-                connectedStations.add(connection);
-                jConnectionNode.add(createJSONObj(connection));
-            });
-            jConnections.add(jConnectionNode);
-        }
-        return jConnections;
+        };
     }
 
-    private static Set<Station> getStationsWithConnections(Metro metro) {
-        Set<Station> allStations = new HashSet<>();
-        metro.getLines().stream()
-                .map(Line::getStations)
-                .forEach(stations -> stations.stream()
-                .filter(station -> !station.getConnections().isEmpty()).forEach(allStations::add));
-        return allStations;
-    }
+    /*
+    ============================ reading JSON ============================
+     */
 
-    private static JSONObject createJSONObj(Station station) {
-        JSONObject jStation = new JSONObject();
-        jStation.put("line", station.getLine().getNumber());
-        jStation.put("station", station.getName());
-        return jStation;
-    }
-
-    public static Metro parseJSON() {
+    public static Metro parseJSON(String jsonfilePath) {
         Metro metro = new Metro();
         try {
             JSONParser parser = new JSONParser();
-            JSONObject jData = (JSONObject) parser.parse(getJSONData());
-            JSONArray jLines = (JSONArray) jData.get("lines");
-            JSONObject jStations = (JSONObject) jData.get("stations");
-            JSONArray jConnections = (JSONArray) jData.get("connections");
-            parseLines(jLines, metro);
-            parseStations(jStations, metro);
-            parseConnections(jConnections, metro);
-            System.out.println("Reading from JSON file " + JSONFILE_PATH + " is complete");
+            JSONObject jMetro = (JSONObject) parser.parse(getJSONData(jsonfilePath));
+            Map<String, Object> metroMap = mapper.readValue(jMetro.toJSONString(), new TypeReference<Map<String, Object>>() {});
+            parseLines(metroMap, metro);
+            parseStations(metroMap, metro);
+            parseConnections(metroMap, metro);
+            System.out.println("Reading from JSON file " + Paths.get(jsonfilePath).toAbsolutePath() + " is complete");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return metro;
     }
 
-    private static void parseConnections(JSONArray jConnections, Metro metro) {
-        for (Object o : jConnections) {
-            JSONArray jConNode = (JSONArray) o;
-            List<Station> consNode = createConnectionNode(jConNode, metro);
-            for (int i = 0; i < consNode.size() - 1; i++) {
-                Station curStation = consNode.get(i);
-                for (int j = i + 1; j < consNode.size(); j++) {
-                    curStation.addConnection(consNode.get(j));
-                }
-            }
+    private static void parseConnections(Map<String, Object> metroMap, Metro metro) {
+        List<Object> generalConList = (ArrayList) metroMap.get("connected stations");
+        generalConList.forEach(item -> generateConnectionNode(item, metro));
+    }
+
+    private static void generateConnectionNode(Object item, Metro metro) {
+        Map<String, Object> conNode = (Map) item;
+        String stationName = (String) conNode.get("name");
+        Line line = getLineFromConnection(conNode.get("line"), metro);
+        Station station = line.getStation(stationName);
+        if (station == null) {
+            throw new NullPointerException("Station " + stationName + " on line " + line.getNumber() + " not found. Check the JSON file for incorrect info.");
+        } else {
+            getStationsConnections(conNode.get("connections"), station);
         }
     }
 
-    private static List<Station> createConnectionNode(JSONArray jConNode, Metro metro) {
-        // TODO: exception if not found
-        List<Station> connectionsList = new ArrayList<>();
-        jConNode.forEach(jNode -> {
-            JSONObject jConStation = (JSONObject) jNode;
-            String lineNumber = (String) jConStation.get("line");
-            String stationName = (String) jConStation.get("station");
-            Station curStation = metro.getLine(lineNumber).getStation(stationName);
-            connectionsList.add(curStation);
-        });
-        return connectionsList;
+    private static void getStationsConnections(Object connections, Station station ) {
+        List<Object> conStations = (ArrayList) connections;
+        List<Connection> cons = new ArrayList<>();
+        conStations.stream().map(con -> (Map) con).forEach(conInfo -> cons.add(new Connection( (String) conInfo.get("lineNumber"), (String) conInfo.get("name"))));
+        station.addConnections(cons);
     }
 
-    private static void parseStations(JSONObject jStations, Metro metro) {
-        // TODO: exception if not found
-        for (Object key : jStations.keySet()) {
-            String lineNumber = (String) key;
-            Line line = metro.getLine(lineNumber);
-            JSONArray jLineStations = (JSONArray) jStations.get(lineNumber);
-            for (Object o : jLineStations) {
-                Station station = new Station((String) o, line);
-                line.addStation(station);
-            }
+    private static Line getLineFromConnection(Object info, Metro metro) {
+        Map<String, String> lineInfo = (Map) info;
+        String lineNumber = lineInfo.get("number");
+        Line line = metro.getLine(lineNumber);
+        if (line == null) {
+            throw new NullPointerException("Line " + lineNumber + " not found. Check the JSON file for incorrect info.");
+        } else {
+            return line;
         }
     }
 
-    private static void parseLines(JSONArray jLines, Metro metro) {
-        for (Object o : jLines) {
-            JSONObject jLine = (JSONObject) o;
-            Line line = new Line((String) jLine.get("name"), (String) jLine.get("number"));
-            metro.addLine(line);
+    private static void parseStations(Map<String, Object> metroMap, Metro metro) {
+        Map<String, Object> stations = (Map) (metroMap.get("stations"));
+        stations.entrySet().forEach(entry -> fillLineWithStations(entry, metro));
+    }
+
+    private static void fillLineWithStations(Map.Entry<String, Object> entry, Metro metro) {
+        String lineNumber = entry.getKey();
+        Line line = metro.getLine(lineNumber);
+        if (line == null) {
+            throw new IllegalArgumentException("The line number " + lineNumber + " not found. Check the JSON file for incorrect info.");
+        } else {
+            List<String> stations = (ArrayList) entry.getValue();
+            stations.forEach(stationName -> line.addStation(new Station(stationName, line)));
         }
     }
 
-    private static String getJSONData() {
+    private static void parseLines(Map<String, Object> metroMap, Metro metro) {
+        List<Map<String, String>> lines = (ArrayList) (metroMap.get("lines"));
+        lines.forEach(line -> metro.addLine(new Line(line.get("name"), line.get("number"))));
+    }
+
+    private static String getJSONData(String jsonfilePath) {
         StringBuilder builder = new StringBuilder();
         try {
-            List<String> lines = Files.readAllLines(Paths.get(JSONFILE_PATH));
+            List<String> lines = Files.readAllLines(Paths.get(jsonfilePath));
             lines.forEach(builder::append);
         } catch (Exception ex) {
             ex.printStackTrace();

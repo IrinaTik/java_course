@@ -1,3 +1,4 @@
+import DataModel.Connection;
 import DataModel.Line;
 import DataModel.Metro;
 import DataModel.Station;
@@ -6,18 +7,16 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HTMLParsing {
 
-    private static final String SITE_URL = "https://www.moscowmap.ru/metro.html#lines";
-
-    public static Metro parseHTML() {
+    public static Metro parseHTML(String siteUrl ) {
         Metro metro = new Metro();
         try {
-            Document doc = Jsoup.connect(SITE_URL).maxBodySize(0).get();
+            Document doc = Jsoup.connect(siteUrl).maxBodySize(0).get();
             HTMLParsing.fillTheLinesInfo(doc, metro);
             HTMLParsing.fillTheStationsInfo(doc, metro);
             HTMLParsing.fillConnections(doc, metro);
@@ -70,8 +69,7 @@ public class HTMLParsing {
             for (Element link : metroLink) {
                 String conStationName = getConStationName(link.attr("title"));
                 String conLineNumber = getConLineNumber(link.attr("class"));
-                Station conStation = metro.getLine(conLineNumber).getStation(conStationName);
-                station.addConnection(conStation);
+                station.addConnection(new Connection(conLineNumber, conStationName));
             }
         }
     }
@@ -95,7 +93,7 @@ public class HTMLParsing {
     }
 
     private static Line findLineByNumber(String lNumber, Metro metro) {
-        List<Line> lines = metro.getLines();
+        Set<Line> lines = metro.getLines();
         for (Line line : lines) {
             if (line.getNumber().equals(lNumber)) {
                 return line;
