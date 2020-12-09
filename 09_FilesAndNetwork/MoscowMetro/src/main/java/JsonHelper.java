@@ -4,9 +4,8 @@ import DataModel.Metro;
 import DataModel.Station;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -70,9 +69,7 @@ public class JsonHelper {
     public static Metro parseJSON(String jsonfilePath) {
         Metro metro = new Metro();
         try {
-            JSONParser parser = new JSONParser();
-            JSONObject jMetro = (JSONObject) parser.parse(getJSONData(jsonfilePath));
-            Map<String, Object> metroMap = mapper.readValue(jMetro.toJSONString(), new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> metroMap = mapper.readValue(new File(jsonfilePath), new TypeReference<Map<String, Object>>() {});
             parseLines(metroMap, metro);
             parseStations(metroMap, metro);
             parseConnections(metroMap, metro);
