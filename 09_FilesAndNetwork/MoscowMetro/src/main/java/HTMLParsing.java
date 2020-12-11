@@ -7,19 +7,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class HTMLParsing {
 
     public static Metro parseHTML(String siteUrl ) {
         Metro metro = new Metro();
         try {
             Document doc = Jsoup.connect(siteUrl).maxBodySize(0).get();
-            HTMLParsing.fillTheLinesInfo(doc, metro);
-            HTMLParsing.fillTheStationsInfo(doc, metro);
-            HTMLParsing.fillConnections(doc, metro);
+            fillInfo(doc, metro);
             System.out.println("HTML parsing complete");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -27,78 +21,33 @@ public class HTMLParsing {
         return metro;
     }
 
-    public static void fillTheLinesInfo(Document doc, Metro metro) {
-        Elements linesInfo = doc.select("span[class*=\"js-metro-line\"]");
-        for (Element lineInfo : linesInfo) {
-            Line curLine = new Line(lineInfo.text(), lineInfo.attr("data-line"));
-            metro.addLine(curLine);
-        }
-    }
+    public static void fillInfo(Document doc, Metro metro) {
+        Elements lines = doc.select("span.js-metro-line");
+        Elements stationsByLines = doc.select("div.js-metro-stations");
 
-    public static void fillTheStationsInfo(Document doc, Metro metro) {
-        Elements linesStationsInfo = doc.select("div[class*=\"js-metro-stations\"]");
+        for (int i = 0; i < lines.size(); i++) {
+            Element line = lines.get(i);
+            Elements lineStations = stationsByLines.get(i).select("p");
+            String lineNumber = line.attr("data-line");
+            metro.addLine(new Line(line.text(), lineNumber));
 
-        for (Element lineStationsInfo : linesStationsInfo) {
-            String lineNumber = lineStationsInfo.attr("data-line");
-            Line curLine = findLineByNumber(lineNumber, metro);
-            Elements stationsInfo = lineStationsInfo.select("span.name");
-            stationsInfo.forEach(stationInfo -> {
-                curLine.addStation(new Station(stationInfo.text(), curLine));
-            });
-        }
-    }
-
-    public static void fillConnections(Document doc, Metro metro) {
-        Elements linesStationsInfo = doc.select("div[class*=\"js-metro-stations\"]");
-
-        for (Element lineStationsInfo : linesStationsInfo) {
-            String lineNumber = lineStationsInfo.attr("data-line");
-            Elements lineStationInfo = lineStationsInfo.select("a[data-metrost]");
-            for (Element info : lineStationInfo) {
-                String stationName = info.select("span[class=name]").text();
-                Station curStation = metro.getLine(lineNumber).getStation(stationName);
-                fillStationConnections(info, curStation, metro);
+            for (int j = 0; j < lineStations.size(); j++) {
+                Element elStation = lineStations.get(j);
+                String stationName = elStation.select("span[class=name]").text();
+                Station station = new Station(stationName, lineNumber);
+                metro.addStation(station);
+                Elements links = elStation.select("span[title*=переход на]");
+                if (!links.isEmpty()) {
+                    Connection connection = new Connection(station);
+                    for (Element link : links) {
+                        String linkLineNumber = link.attr("class").replaceAll(".+ln-", "");
+                        String linkStationName = link.attr("title").replaceAll(".+«(.+)».+", "$1");
+                        Station conStation = new Station(linkStationName, linkLineNumber);
+                        connection.addConnection(conStation);
+                    }
+                    metro.addConnection(connection);
+                }
             }
         }
-    }
-
-    private static void fillStationConnections(Element lineStationInfo, Station station, Metro metro) {
-        Elements metroLink = lineStationInfo.select("span[title*=переход на]");
-
-        if (!metroLink.isEmpty()) {
-            for (Element link : metroLink) {
-                String conStationName = getConStationName(link.attr("title"));
-                String conLineNumber = getConLineNumber(link.attr("class"));
-                station.addConnection(new Connection(conLineNumber, conStationName));
-            }
-        }
-    }
-
-    private static String getConLineNumber(String number) {
-        Pattern pattern = Pattern.compile("(t-icon-metroln ln-)(.+)");
-        return getConInfo(number, pattern);
-    }
-
-    private static String getConStationName(String name) {
-        Pattern pattern = Pattern.compile("(переход на станцию )«(.+)»(.+)");
-        return getConInfo(name, pattern);
-    }
-
-    private static String getConInfo(String s, Pattern pattern) {
-        Matcher matcher = pattern.matcher(s);
-        if (matcher.find()) {
-            return matcher.group(2).trim();
-        }
-        return "";
-    }
-
-    private static Line findLineByNumber(String lNumber, Metro metro) {
-        Set<Line> lines = metro.getLines();
-        for (Line line : lines) {
-            if (line.getNumber().equals(lNumber)) {
-                return line;
-            }
-        }
-        return null;
     }
 }

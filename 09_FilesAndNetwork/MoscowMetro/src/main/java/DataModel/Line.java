@@ -1,22 +1,17 @@
 package DataModel;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Line implements Comparable<Line> {
 
     private String name;
     private String number;
-    @JsonIgnore
-    private List<Station> stations;
+
+    public Line() {}
 
     public Line(String name, String number) {
         this.name = name;
         this.number = number;
-        this.stations = new ArrayList<>();
     }
 
     public String getName() {
@@ -29,20 +24,12 @@ public class Line implements Comparable<Line> {
     }
 
 
-    public Station getStation(String name) {
-        return this.stations.stream().filter(station -> station.getName().equals(name)).findAny().orElse(null);
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<Station> getStations() {
-        return stations;
-    }
-
-    public void addStations(List<Station> stations) {
-        this.stations.addAll(stations);
-    }
-
-    public void addStation(Station station) {
-        stations.add(station);
+    public void setNumber(String number) {
+        this.number = number;
     }
 
     @Override
@@ -51,8 +38,7 @@ public class Line implements Comparable<Line> {
         if (o == null || getClass() != o.getClass()) return false;
         Line line = (Line) o;
         return Objects.equals(name, line.name) &&
-                Objects.equals(number, line.number) &&
-                Objects.equals(getStations().size(), line.getStations().size());
+                Objects.equals(number, line.number);
     }
 
     @Override
@@ -62,7 +48,7 @@ public class Line implements Comparable<Line> {
 
     @Override
     public String toString() {
-        return name + "\nНомер: " + number + "\nСтанции: " + stations.size();
+        return name + " - " + number;
     }
 
     @Override

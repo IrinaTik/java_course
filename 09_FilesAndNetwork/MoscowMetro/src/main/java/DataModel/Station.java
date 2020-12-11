@@ -1,53 +1,37 @@
 package DataModel;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
-public class Station {
+public class Station implements Comparable<Station>{
 
     private String name;
-    private Line line;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Connection> connections;
+    @JsonProperty("line")
+    private String lineNumber;
 
-    public Station(String name, Line line) {
+    public Station() {
+    }
+
+    public Station(String name, String lineNumber) {
         this.name = name;
-        this.line = line;
-        this.connections = new ArrayList<>();
+        this.lineNumber = lineNumber;
     }
 
     public String getName() {
         return name;
     }
 
-    public Line getLine() {
-        return line;
+    public String getLineNumber() {
+        return lineNumber;
     }
 
-    public List<Connection> getConnections() {
-        return connections;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void addConnection(Connection connection) {
-        if (!this.connections.contains(connection)) {
-            this.connections.add(connection);
-        }
-    }
-
-    public void addConnections(Collection<Connection> connections) {
-        connections.forEach(this::addConnection);
-    }
-
-    public String consToString() {
-        StringBuilder builder = new StringBuilder("\t\tПереход на: ");
-        for (Connection conStation : this.connections) {
-            builder.append("\n\t\t\t" + conStation.getName() + "(" + conStation.getLineNumber() + ")");
-        }
-        return builder.toString();
+    public void setLineNumber(String lineNumber) {
+        this.lineNumber = lineNumber;
     }
 
     @Override
@@ -56,17 +40,27 @@ public class Station {
         if (o == null || getClass() != o.getClass()) return false;
         Station station = (Station) o;
         return Objects.equals(name, station.name) &&
-                Objects.equals(line, station.line) &&
-                Objects.equals(getConnections().size(), station.getConnections().size());
+                Objects.equals(lineNumber, station.lineNumber);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, line);
+        return Objects.hash(name, lineNumber);
     }
 
     @Override
     public String toString() {
-        return this.name + "(" + this.line.getNumber() + ")" + (this.connections.isEmpty() ? "" : "\n" + consToString());
+        return this.name + "(" + this.lineNumber + ")";
+    }
+
+    @Override
+    public int compareTo(Station s) {
+        if (this.getLineNumber().length() > s.getLineNumber().length()) {
+            return 1;
+        } else if (this.getLineNumber().length() < s.getLineNumber().length()) {
+            return -1;
+        } else {
+            return this.getLineNumber().compareTo(s.getLineNumber());
+        }
     }
 }
