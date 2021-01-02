@@ -1,3 +1,5 @@
+package Helpers;
+
 public enum CourseType {
     DESIGN,
     PROGRAMMING,

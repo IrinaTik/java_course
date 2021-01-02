@@ -1,9 +1,6 @@
+import Helpers.SessionHelper;
+import Tables.*;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.Metadata;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -12,31 +9,55 @@ import java.util.List;
 
 public class DoStuff {
 
-    private static SessionFactory sessionFactory;
-    private static Session session;
-
     public static void main(String[] args) {
 
-        prepare();
+        SessionHelper sh = new SessionHelper();
+        Session session = sh.getSession();
 
-        getFirstCourse();
+        getFirstCourse(session);
         System.out.println("================== Students ==================");
-        getStudentsList();
+        getStudentsList(session);
         System.out.println("================== Teachers ==================");
-        getTeachersList();
-        System.out.println("Всего учителей: " + getTeachersCount());
+        getTeachersList(session);
+        System.out.println("Всего учителей: " + getTeachersCount(session));
+        System.out.println("================== Courses info ==================");
+        getInfoForCourse(session);
+        System.out.println("================== Subscriptions ==================");
+        getSubscriptions(session);
+        System.out.println("================== Purchases ==================");
+        getPurchases(session);
 
-        end();
+        sh.stop();
     }
 
-    private static Long getTeachersCount() {
+    private static void getPurchases(Session session) {
+        List<Purchase> purchases = session.createQuery("from Tables.Purchase", Purchase.class).getResultList();
+        purchases.forEach(p -> System.out.println(p.toString()));
+    }
+
+    private static void getSubscriptions(Session session) {
+        List<Subscription> subscriptions = session.createQuery("from Tables.Subscription", Subscription.class).getResultList();
+        subscriptions.forEach(s -> System.out.println(s.getStudent().getName() + " - " + s.getCourse().getName() + " - " + s.getSubDateString()));
+    }
+
+    private static void getInfoForCourse(Session session) {
+        List<Course> courses = session.createQuery("from Tables.Course", Course.class).getResultList();
+
+        for (Course course : courses) {
+            System.out.println(course.getName());
+            System.out.println("\t" + course.getTeacher().getName());
+            course.getStudents().forEach(student -> System.out.println("\t\t" + student.getName()));
+        }
+    }
+
+    private static Long getTeachersCount(Session session) {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Long> query = builder.createQuery(Long.class);
         query.select(builder.count(query.from(Teacher.class)));
         return session.createQuery(query).getSingleResult();
     }
 
-    private static void getTeachersList() {
+    private static void getTeachersList(Session session) {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Teacher> criteriaQuery = builder.createQuery(Teacher.class);
         criteriaQuery.from(Teacher.class);
@@ -47,30 +68,19 @@ public class DoStuff {
         }
     }
 
-    private static void getStudentsList() {
-        List<Student> students = session.createQuery("from Student", Student.class).getResultList();
+    private static void getStudentsList(Session session) {
+        List<Student> students = session.createQuery("from Tables.Student", Student.class).getResultList();
 
         for (Student s : students) {
             System.out.println(s.getName() + " - " + s.getAge() + " - "
                     + new SimpleDateFormat("dd-MM-yyyy").format(s.getRegistrationDate()));
+            s.getCourses().forEach(course -> System.out.println("\t" + course.getName()));
         }
     }
 
-    private static void getFirstCourse() {
+    private static void getFirstCourse(Session session) {
         Course course = session.get(Course.class, 1);
         System.out.println(course.getName() + " - " + course.getStudentsCount());
-    }
-
-    private static void prepare() {
-        StandardServiceRegistry registry = new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build();
-        Metadata metadata = new MetadataSources(registry).getMetadataBuilder().build();
-        sessionFactory = metadata.getSessionFactoryBuilder().build();
-        session = sessionFactory.openSession();
-    }
-
-    private static void end() {
-        session.close();
-        sessionFactory.close();
     }
 
 }
