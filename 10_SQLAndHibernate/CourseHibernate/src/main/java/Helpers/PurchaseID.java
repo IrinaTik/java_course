@@ -46,4 +46,9 @@ public class PurchaseID implements Serializable {
     public int hashCode() {
         return Objects.hash(studentName, courseName);
     }
+
+    @Override
+    public String toString() {
+        return studentName + " - " + courseName;
+    }
 }

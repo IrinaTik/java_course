@@ -1,9 +1,11 @@
+import Helpers.LinkedPurchaseId;
 import Helpers.SessionHelper;
 import Tables.*;
 import org.hibernate.Session;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
@@ -14,6 +16,33 @@ public class DoStuff {
         SessionHelper sh = new SessionHelper();
         Session session = sh.getSession();
 
+        List<Purchase> purchases = getPurchases(session);
+
+        for (Purchase purchase : purchases) {
+            Course course = getIndex(session, "name", purchase.getId().getCourseName(), Course.class);
+            Student student = getIndex(session, "name", purchase.getId().getStudentName(), Student.class);
+            session.beginTransaction();
+            LinkedPurchase linkedPurchase = new LinkedPurchase();
+            linkedPurchase.setId(new LinkedPurchaseId(student.getId(), course.getId()));
+            session.save(linkedPurchase);
+            session.getTransaction().commit();
+        }
+
+        List<LinkedPurchase> linkedPurchases = session.createQuery("from Tables.LinkedPurchase", LinkedPurchase.class).getResultList();
+        linkedPurchases.forEach(System.out::println);
+
+        sh.stop();
+    }
+
+    private static <T> T getIndex(Session session, String fieldName, String fieldValue, Class<T> tClass) {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<T> query = builder.createQuery(tClass);
+        Root<T> root = query.from(tClass);
+        query.select(root).where(builder.equal(root.<Integer>get(fieldName), fieldValue));
+        return session.createQuery(query).getSingleResult();
+    }
+
+    private static void taskTenThree(Session session) {
         getFirstCourse(session);
         System.out.println("================== Students ==================");
         getStudentsList(session);
@@ -24,15 +53,10 @@ public class DoStuff {
         getInfoForCourse(session);
         System.out.println("================== Subscriptions ==================");
         getSubscriptions(session);
-        System.out.println("================== Purchases ==================");
-        getPurchases(session);
-
-        sh.stop();
     }
 
-    private static void getPurchases(Session session) {
-        List<Purchase> purchases = session.createQuery("from Tables.Purchase", Purchase.class).getResultList();
-        purchases.forEach(p -> System.out.println(p.toString()));
+    private static List<Purchase> getPurchases(Session session) {
+        return session.createQuery("from Tables.Purchase", Purchase.class).getResultList();
     }
 
     private static void getSubscriptions(Session session) {
