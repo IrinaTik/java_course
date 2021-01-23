@@ -1,56 +1,42 @@
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        String srcFolder = "/users/sortedmap/Desktop/src";
-        String dstFolder = "/users/sortedmap/Desktop/dst";
+//        String srcFolder = "/users/sortedmap/Desktop/src";
+//        String dstFolder = "/users/sortedmap/Desktop/dst";
+        String srcFolder = "d:/Pictures/";
+        String dstFolder = "d:/Pics/";
 
+        // получение массива файлов
         File srcDir = new File(srcFolder);
-
-        long start = System.currentTimeMillis();
-
         File[] files = srcDir.listFiles();
 
-        try
-        {
-            for(File file : files)
-            {
-                BufferedImage image = ImageIO.read(file);
-                if(image == null) {
-                    continue;
-                }
+        // количество доступных процессоров
+        int processorsCount = Runtime.getRuntime().availableProcessors();
+        System.out.println("Processors: " + processorsCount);
 
-                int newWidth = 300;
-                int newHeight = (int) Math.round(
-                        image.getHeight() / (image.getWidth() / (double) newWidth)
-                );
-                BufferedImage newImage = new BufferedImage(
-                        newWidth, newHeight, BufferedImage.TYPE_INT_RGB
-                );
+        // делим файлы по массивам длиной limit, чтобы уместиться в количество процессоров
+        int limit = files.length / processorsCount;
 
-                int widthStep = image.getWidth() / newWidth;
-                int heightStep = image.getHeight() / newHeight;
-
-                for (int x = 0; x < newWidth; x++)
-                {
-                    for (int y = 0; y < newHeight; y++) {
-                        int rgb = image.getRGB(x * widthStep, y * heightStep);
-                        newImage.setRGB(x, y, rgb);
-                    }
-                }
-
-                File newFile = new File(dstFolder + "/" + file.getName());
-                ImageIO.write(newImage, "jpg", newFile);
+        // пул потоков
+        ExecutorService service = Executors.newFixedThreadPool(processorsCount);
+        File[] splitFiles;
+        for (int i = 0; i < processorsCount; i++) {
+            if (i != processorsCount - 1) {
+                splitFiles = new File[limit];
+            } else {
+                // последний массив чуть больше остальных, чтобы вместить остаток от деления
+                int lastLimit = files.length - limit*i;
+                splitFiles = new File[lastLimit];
             }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
+            System.arraycopy(files, limit * i, splitFiles, 0, splitFiles.length);
+            service.submit(new ImageResizer(splitFiles, dstFolder));
         }
 
-        System.out.println("Duration: " + (System.currentTimeMillis() - start));
+        service.shutdown();
     }
 }
