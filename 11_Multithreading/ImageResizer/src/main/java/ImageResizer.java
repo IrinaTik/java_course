@@ -1,6 +1,10 @@
+import org.imgscalr.Scalr;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+
+import static org.imgscalr.Scalr.resize;
 
 public class ImageResizer implements Runnable {
 
@@ -17,11 +21,33 @@ public class ImageResizer implements Runnable {
     @Override
     public void run() {
         long start = System.currentTimeMillis();
-        resize();
+        resizeWithLibrary();
         System.out.println("Thread name: " + Thread.currentThread().getName() + "\n\t duration - " + (System.currentTimeMillis() - start) + " ms");
     }
 
-    private void resize() {
+    private void resizeWithLibrary() {
+        try {
+            for (File file : files) {
+                BufferedImage image = ImageIO.read(file);
+                if (image == null) {
+                    continue;
+                }
+
+                int newHeight = (int) Math.round(
+                        image.getHeight() / (image.getWidth() / (double) NEW_WIDTH)
+                );
+
+                BufferedImage newImage = resize(image, Scalr.Method.QUALITY, NEW_WIDTH, newHeight);
+
+                File newFile = new File(dstFolder + "/" + file.getName());
+                ImageIO.write(newImage, "jpg", newFile);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void resizeImages() {
         try
         {
             for(File file : files)
