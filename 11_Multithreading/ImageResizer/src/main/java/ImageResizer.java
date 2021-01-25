@@ -22,7 +22,9 @@ public class ImageResizer implements Runnable {
     public void run() {
         long start = System.currentTimeMillis();
         resizeWithLibrary();
-        System.out.println("Thread name: " + Thread.currentThread().getName() + "\n\t duration - " + (System.currentTimeMillis() - start) + " ms");
+        System.out.println("Thread name: " + Thread.currentThread().getName()
+                + "\n\t duration - " + (System.currentTimeMillis() - start) + " ms"
+                + "\n\t array length - " + files.length);
     }
 
     private void resizeWithLibrary() {
@@ -39,8 +41,10 @@ public class ImageResizer implements Runnable {
 
                 BufferedImage newImage = resize(image, Scalr.Method.QUALITY, NEW_WIDTH, newHeight);
 
-                File newFile = new File(dstFolder + "/" + file.getName());
-                ImageIO.write(newImage, "jpg", newFile);
+                String filename = file.getName();
+                File newFile = new File(dstFolder + "/" + filename);
+                // filename.substring(filename.lastIndexOf(".") + 1) - расширение файла
+                ImageIO.write(newImage, filename.substring(filename.lastIndexOf(".") + 1), newFile);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

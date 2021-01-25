@@ -21,19 +21,19 @@ public class Main
 
         // делим файлы по массивам длиной limit, чтобы уместиться в количество процессоров
         int limit = files.length / processorsCount;
+        int remainder = files.length % processorsCount;
 
         // пул потоков
         ExecutorService service = Executors.newFixedThreadPool(processorsCount);
         File[] splitFiles;
         for (int i = 0; i < processorsCount; i++) {
-            if (i != processorsCount - 1) {
-                splitFiles = new File[limit];
+            if (i < remainder) {
+                splitFiles = new File[limit + 1];
+                System.arraycopy(files, (limit + 1) * i, splitFiles, 0, splitFiles.length);
             } else {
-                // последний массив чуть больше остальных, чтобы вместить остаток от деления
-                int lastLimit = files.length - limit*i;
-                splitFiles = new File[lastLimit];
+                splitFiles = new File[limit];
+                System.arraycopy(files, (limit + 1) * remainder + limit * (i - remainder), splitFiles, 0, splitFiles.length);
             }
-            System.arraycopy(files, limit * i, splitFiles, 0, splitFiles.length);
             service.submit(new ImageResizer(splitFiles, dstFolder));
         }
 
