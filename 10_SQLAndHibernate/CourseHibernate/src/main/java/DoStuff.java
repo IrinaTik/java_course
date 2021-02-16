@@ -38,7 +38,7 @@ public class DoStuff {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<T> query = builder.createQuery(tClass);
         Root<T> root = query.from(tClass);
-        query.select(root).where(builder.equal(root.<Integer>get(fieldName), fieldValue));
+        query.select(root).where(builder.equal(root.get(fieldName), fieldValue));
         return session.createQuery(query).getSingleResult();
     }
 
