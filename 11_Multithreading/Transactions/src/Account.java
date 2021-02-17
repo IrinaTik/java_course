@@ -2,7 +2,7 @@ import java.util.UUID;
 
 public class Account
 {
-    private long money;
+    private volatile long money;
     private String accNumber;
     private boolean isBlocked;
 
@@ -32,7 +32,37 @@ public class Account
         return isBlocked;
     }
 
-    public void setBlocked(boolean blocked) {
-        isBlocked = blocked;
+    public void block() {
+        isBlocked = true;
+    }
+
+    public void unblock() {
+        isBlocked = false;
+    }
+
+    public boolean withdraw(long amount) {
+        if ((money < amount) || (isBlocked())) {
+            System.out.println("Account number " + accNumber + " is blocked or doesn't have enough money (" + money + ")");
+            return false;
+        } else {
+            setMoney(amount);
+            return true;
+        }
+    }
+
+    public boolean deposit(long amount) {
+        if (isBlocked()) {
+            System.out.println("Account number " + accNumber + " is blocked");
+            return false;
+        } else {
+            setMoney(amount);
+            return true;
+        }
+    }
+
+    public void transferTo(Account accTo, long amount) {
+        if (this.withdraw(amount)) {
+            accTo.deposit(amount);
+        }
     }
 }

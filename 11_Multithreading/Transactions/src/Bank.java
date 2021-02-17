@@ -1,5 +1,4 @@
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
@@ -28,8 +27,8 @@ public class Bank
         if ((!accounts.containsKey(fromAccountNum)) || (!accounts.containsKey(toAccountNum))) {
             System.out.println("Cannot transfer");
         } else {
-            Account fromAccount;
-            Account toAccount;
+//            Account fromAccount;
+//            Account toAccount;
             if (amount > 50_000) {
                 try {
                     checkForFraud(fromAccountNum, toAccountNum, amount);
@@ -38,6 +37,7 @@ public class Bank
                 }
             } else {
                 // перевод денег
+                doTransferAction(fromAccountNum, toAccountNum, amount);
             }
         }
 
@@ -52,22 +52,30 @@ public class Bank
     }
 
     private void doTransferAction(String fromAccountNum, String toAccountNum, long amount) {
-        // перевод денег
+        Account fromAccount = accounts.get(fromAccountNum);
+        Account toAccount = accounts.get(toAccountNum);
+        boolean withdrawalSuccess = false;
+        synchronized (fromAccount) {
+            if (fromAccount.withdraw(amount)) {
+                withdrawalSuccess = true;
+            }
+        }
+        synchronized (toAccount) {
+            if (withdrawalSuccess) {
+                toAccount.deposit(amount);
+            }
+        }
     }
 
     private void blockAccounts(String fromAccountNum, String toAccountNum) {
-        // блок акков
-    }
-
-    private Account accountExist(String accountNum) {
-        if (accounts.containsKey(accountNum)) {
-        for (Map.Entry<String, Account> entry : accounts.entrySet()) {
-            if (entry.getKey().equals(accountNum)) {
-                entry.
-                return entry.getValue();
-            }
+        Account fromAccount = accounts.get(fromAccountNum);
+        Account toAccount = accounts.get(toAccountNum);
+        synchronized (fromAccount) {
+            fromAccount.block();
         }
-        return null;
+        synchronized (toAccount) {
+            toAccount.block();
+        }
     }
 
     public long getBalance(String accountNum)
