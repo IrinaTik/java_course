@@ -7,6 +7,18 @@ public class Bank
     private HashMap<String, Account> accounts;
     private final Random random = new Random();
 
+    public Bank() {
+        HashMap<String, Account> accounts = new HashMap<>();
+    }
+
+    public Bank(int accountsCount) {
+        HashMap<String, Account> accounts = new HashMap<>();
+        for (int i = 0; i < accountsCount; i++) {
+            Account account = new Account(new Random().nextInt(150_000));
+            accounts.put(account.getAccNumber(), account);
+        }
+    }
+
     public synchronized boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
         throws InterruptedException
     {
@@ -25,10 +37,9 @@ public class Bank
     {
         // проверка на существование акков
         if ((!accounts.containsKey(fromAccountNum)) || (!accounts.containsKey(toAccountNum))) {
-            System.out.println("Cannot transfer");
+            System.out.println("Cannot transfer, account number not found");
         } else {
-//            Account fromAccount;
-//            Account toAccount;
+            // банка-подозревака
             if (amount > 50_000) {
                 try {
                     checkForFraud(fromAccountNum, toAccountNum, amount);
@@ -52,41 +63,34 @@ public class Bank
     }
 
     private void doTransferAction(String fromAccountNum, String toAccountNum, long amount) {
-        Account fromAccount = accounts.get(fromAccountNum);
-        Account toAccount = accounts.get(toAccountNum);
-        boolean withdrawalSuccess = false;
-        synchronized (fromAccount) {
-            if (fromAccount.withdraw(amount)) {
-                withdrawalSuccess = true;
-            }
-        }
-        synchronized (toAccount) {
-            if (withdrawalSuccess) {
-                toAccount.deposit(amount);
-            }
-        }
+        accounts.get(fromAccountNum).transferTo(accounts.get(toAccountNum), amount);
     }
 
     private void blockAccounts(String fromAccountNum, String toAccountNum) {
-        Account fromAccount = accounts.get(fromAccountNum);
-        Account toAccount = accounts.get(toAccountNum);
-        synchronized (fromAccount) {
-            fromAccount.block();
-        }
-        synchronized (toAccount) {
-            toAccount.block();
+        accounts.get(fromAccountNum).block();
+        accounts.get(toAccountNum).block();
+    }
+
+    public Long getBalance(String accountNum)
+    {
+        if (accounts.containsKey(accountNum)) {
+            return accounts.get(accountNum).getMoney();
+        } else {
+            // "невозможный" результат на случай, если ничего не найдется
+            System.out.println("Account number " + accountNum + " not found");
+            return null;
         }
     }
 
-    public long getBalance(String accountNum)
-    {
+    public long getBankBalance() {
+        long bankBalance = 0;
         for (Map.Entry<String, Account> entry : accounts.entrySet()) {
-            Account curAccount = entry.getValue();
-            if (curAccount.getAccNumber().equals(accountNum)) {
-                return curAccount.getMoney();
-            }
+            bankBalance =+ entry.getValue().getMoney();
         }
-        // "невозможный" результат на случай, если ничего не найдется
-        return -1;
+        return bankBalance;
+    }
+
+    public HashMap<String, Account> getAccounts() {
+        return accounts;
     }
 }
