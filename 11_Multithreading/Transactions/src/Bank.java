@@ -12,10 +12,11 @@ public class Bank
     }
 
     public Bank(int accountsCount) {
-        HashMap<String, Account> accounts = new HashMap<>();
+        this.accounts = new HashMap<>();
+        // генерация аккаунтов
         for (int i = 0; i < accountsCount; i++) {
             Account account = new Account(new Random().nextInt(150_000));
-            accounts.put(account.getAccNumber(), account);
+            this.accounts.put(account.getAccNumber(), account);
         }
     }
 
@@ -26,13 +27,6 @@ public class Bank
         return random.nextBoolean();
     }
 
-    /**
-     * TODO: реализовать метод. Метод переводит деньги между счетами.
-     * Если сумма транзакции > 50000, то после совершения транзакции,
-     * она отправляется на проверку Службе Безопасности – вызывается
-     * метод isFraud. Если возвращается true, то делается блокировка
-     * счетов (как – на ваше усмотрение)
-     */
     public void transfer(String fromAccountNum, String toAccountNum, long amount)
     {
         // проверка на существование акков
@@ -56,6 +50,7 @@ public class Bank
 
     private void checkForFraud(String fromAccountNum, String toAccountNum, long amount) throws InterruptedException {
         if (isFraud(fromAccountNum, toAccountNum, amount)) {
+            System.out.println("Fraud! Transfer denied!");
             blockAccounts(fromAccountNum, toAccountNum);
         } else {
             doTransferAction(fromAccountNum, toAccountNum, amount);
@@ -66,11 +61,14 @@ public class Bank
         accounts.get(fromAccountNum).transferTo(accounts.get(toAccountNum), amount);
     }
 
+
+    // блокировка аккаунтов
     private void blockAccounts(String fromAccountNum, String toAccountNum) {
         accounts.get(fromAccountNum).block();
         accounts.get(toAccountNum).block();
     }
 
+    // баланс одного счета
     public Long getBalance(String accountNum)
     {
         if (accounts.containsKey(accountNum)) {
@@ -82,10 +80,11 @@ public class Bank
         }
     }
 
+    // баланк всего банка
     public long getBankBalance() {
         long bankBalance = 0;
         for (Map.Entry<String, Account> entry : accounts.entrySet()) {
-            bankBalance =+ entry.getValue().getMoney();
+            bankBalance = bankBalance + entry.getValue().getMoney();
         }
         return bankBalance;
     }

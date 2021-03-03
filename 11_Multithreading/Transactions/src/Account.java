@@ -1,7 +1,10 @@
+import java.util.Random;
 import java.util.UUID;
 
 public class Account
 {
+    private static final int MONEY_THRESHOLD = 50_000;
+
     private volatile long money;
     private final String accNumber;
     private volatile boolean isBlocked;
@@ -35,37 +38,43 @@ public class Account
     }
 
     public synchronized void block() {
-        if (!isBlocked) {
-            isBlocked = true;
+        if (!this.isBlocked) {
+            System.out.println("Account " + this.getAccNumber() + " is blocked now!");
+            this.isBlocked = true;
         }
     }
 
     public synchronized void unblock() {
-        if (isBlocked) {
-            isBlocked = false;
+        if (this.isBlocked) {
+            System.out.println("Account " + this.getAccNumber() + " is unblocked now!");
+            this.isBlocked = false;
         }
     }
 
+    // единичное снятие денег
     public boolean withdraw(long amount) {
         if ((money < amount) || (isBlocked())) {
             System.out.println("Account number " + accNumber + " is blocked or doesn't have enough money (" + money + ")");
             return false;
         } else {
-            setMoney(amount);
+            this.setMoney(this.money - amount);
             return true;
         }
     }
 
+    // единичный вклад денег
     public boolean deposit(long amount) {
         if (isBlocked()) {
             System.out.println("Account number " + accNumber + " is blocked");
             return false;
         } else {
-            setMoney(amount);
+            this.setMoney(this.money + amount);
             return true;
         }
     }
 
+
+    // проверка, можно ли проводить перевод между счетами
     private boolean isReadyForTransfer(Account account, long amount) {
         if ((this.money >= amount) && (!this.isBlocked) && (!account.isBlocked())) {
             return true;
@@ -74,17 +83,19 @@ public class Account
         }
     }
 
+
+    // перевод между счетами
     public void transferTo(Account accTo, long amount) {
         if (accNumber.compareTo(accTo.getAccNumber()) > 0) {
             synchronized (this) {
                 synchronized (accTo) {
-                    doTransferAction(accTo, amount);
+                    this.doTransferAction(accTo, amount);
                 }
             }
         } else {
             synchronized (accTo) {
                 synchronized (this) {
-                    doTransferAction(accTo, amount);
+                    this.doTransferAction(accTo, amount);
                 }
             }
         }
@@ -94,9 +105,20 @@ public class Account
         if (isReadyForTransfer(accTo, amount)) {
             this.withdraw(amount);
             accTo.deposit(amount);
-            System.out.println("Transfer between accounts " + this.accNumber + " and " + accTo.getAccNumber() + " was successful");
+            System.out.println("Transfer between accounts " + this.accNumber + " and " + accTo.getAccNumber() + " was successful with amount " + amount);
         } else {
-            System.out.println("Transfer between accounts " + this.accNumber + " and " + accTo.getAccNumber() + " failed");
+            System.out.println("Transfer between accounts " + this.accNumber + " and " + accTo.getAccNumber() + " failed with amount " + amount);
+        }
+    }
+
+    // генерирует сумму для перевода между счетами, в соответствии с правилом:
+    //          транзакции на суммы >50000 не более 5% от всех
+    public static int getTransferAmount() {
+        int threshold = new Random().nextInt(100);
+        if (threshold > 5) {
+            return new Random().nextInt(MONEY_THRESHOLD) + 1;
+        } else {
+            return new Random().nextInt() + MONEY_THRESHOLD;
         }
     }
 }
