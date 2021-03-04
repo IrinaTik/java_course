@@ -15,12 +15,6 @@ public class Account
         this.accNumber = UUID.randomUUID().toString();
     }
 
-    public Account(String accNumber, long money) {
-        this.money = money;
-        this.isBlocked = false;
-        this.accNumber = accNumber;
-    }
-
     public long getMoney() {
         return money;
     }
@@ -51,38 +45,39 @@ public class Account
         }
     }
 
-    // единичное снятие денег
-    public boolean withdraw(long amount) {
-        if ((money < amount) || (isBlocked())) {
-            System.out.println("Account number " + accNumber + " is blocked or doesn't have enough money (" + money + ")");
+    // можно ли снимать деньги со счета
+    private boolean isReadyToWithdraw(long amount) {
+        if ((this.money < amount) || (this.isBlocked)) {
+            System.out.println("Account number " + accNumber + (this.isBlocked ? " is blocked" : " doesn't have enough money (" + money + ")"));
             return false;
         } else {
+            return true;
+        }
+    }
+
+    // единичное снятие денег
+    public void withdraw(long amount) {
+        if (isReadyToWithdraw(amount)) {
             this.setMoney(this.money - amount);
+        }
+    }
+
+    // можно ли класть деньги на счет
+    private boolean isReadyToDeposit() {
+        if (this.isBlocked) {
+            System.out.println("Account number " + accNumber + " is blocked");
+            return false;
+        } else {
             return true;
         }
     }
 
     // единичный вклад денег
-    public boolean deposit(long amount) {
-        if (isBlocked()) {
-            System.out.println("Account number " + accNumber + " is blocked");
-            return false;
-        } else {
+    public void deposit(long amount) {
+        if (this.isReadyToDeposit()) {
             this.setMoney(this.money + amount);
-            return true;
         }
     }
-
-
-    // проверка, можно ли проводить перевод между счетами
-    private boolean isReadyForTransfer(Account account, long amount) {
-        if ((this.money >= amount) && (!this.isBlocked) && (!account.isBlocked())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     // перевод между счетами
     public void transferTo(Account accTo, long amount) {
@@ -102,7 +97,7 @@ public class Account
     }
 
     private void doTransferAction(Account accTo, long amount) {
-        if (isReadyForTransfer(accTo, amount)) {
+        if (this.isReadyToWithdraw(amount) && accTo.isReadyToDeposit()) {
             this.withdraw(amount);
             accTo.deposit(amount);
             System.out.println("Transfer between accounts " + this.accNumber + " and " + accTo.getAccNumber() + " was successful with amount " + amount);
@@ -118,7 +113,7 @@ public class Account
         if (threshold > 5) {
             return new Random().nextInt(MONEY_THRESHOLD) + 1;
         } else {
-            return new Random().nextInt() + MONEY_THRESHOLD;
+            return new Random().nextInt(MONEY_THRESHOLD) + MONEY_THRESHOLD;
         }
     }
 }
