@@ -81,17 +81,9 @@ public class Account
 
     // перевод между счетами
     public void transferTo(Account accTo, long amount) {
-        if (accNumber.compareTo(accTo.getAccNumber()) > 0) {
-            synchronized (this) {
-                synchronized (accTo) {
-                    this.doTransferAction(accTo, amount);
-                }
-            }
-        } else {
-            synchronized (accTo) {
-                synchronized (this) {
-                    this.doTransferAction(accTo, amount);
-                }
+        synchronized ((accNumber.compareTo(accTo.getAccNumber()) > 0) ? this : accTo) {
+            synchronized ((accNumber.compareTo(accTo.getAccNumber()) > 0) ? accTo : this) {
+                this.doTransferAction(accTo, amount);
             }
         }
     }

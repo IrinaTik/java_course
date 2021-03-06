@@ -20,10 +20,16 @@ public class Bank
         }
     }
 
-    public synchronized boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
+    public boolean isFraud(String fromAccountNum, String toAccountNum, long amount)
         throws InterruptedException
     {
-        Thread.sleep(1000);
+        Account acc1 = this.accounts.get(fromAccountNum);
+        Account acc2 = this.accounts.get(toAccountNum);
+        synchronized ((fromAccountNum.compareTo(toAccountNum) > 0) ? acc1 : acc2) {
+            synchronized ((fromAccountNum.compareTo(toAccountNum) > 0) ? acc2 : acc1) {
+                Thread.sleep(1000);
+            }
+        }
         return random.nextBoolean();
     }
 
