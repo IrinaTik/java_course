@@ -10,10 +10,12 @@ public class Friend implements Comparable<Friend>
         return this.name;
     }
 
-    public synchronized void throwBallTo(Friend catcher)
+    public void throwBallTo(Friend catcher)
     {
-        System.out.format("%s: %s кинул мне мяч!%n", catcher.getName(), this.name);
-        catcher.throwBallTo(this);
+        System.out.format("%s: %s кинул мне мяч! : %s %n", catcher.getName(), this.name, Thread.currentThread().getName());
+        synchronized (compareTo(catcher) > 0 ? catcher : this) {
+            catcher.throwBallTo(this);
+        }
     }
 
     @Override

@@ -1,9 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class BankSimulator {
 
@@ -27,17 +25,23 @@ public class BankSimulator {
     private static void startTransfers(Bank bank) throws InterruptedException {
         List<Account> accounts = new ArrayList<>(bank.getAccounts().values());
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+        List<Future> futures = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
             int index1 = getRandomIndex();
             int index2 = getRandomIndex(index1);
             String uuid1 = accounts.get(index1).getAccNumber();
             String uuid2 = accounts.get(index2).getAccNumber();
             Runnable task = () -> bank.transfer(uuid1, uuid2, Account.getTransferAmount());
-            executor.submit(task);
+            futures.add(executor.submit(task));
         }
-        executor.shutdown();
-        // ждем окончания работы потоков
-        executor.awaitTermination(100, TimeUnit.SECONDS);
+        // вместо executor.shutdown() и executor.awaitTermination(100, TimeUnit.SECONDS)
+        futures.forEach(res -> {
+            try {
+                res.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private static int getRandomIndex() {
