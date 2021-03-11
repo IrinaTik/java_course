@@ -12,7 +12,7 @@ public class SiteLinksParser extends RecursiveTask<StringBuffer> {
 
     @Override
     protected StringBuffer compute() {
-        StringBuffer buffer = new StringBuffer(node.getUrl());
+        StringBuffer buffer = new StringBuffer(node.getUrlWithTabs());
 
         List<SiteLinksParser> tasks = new ArrayList<>();
 
