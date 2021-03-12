@@ -23,7 +23,12 @@ public class SiteLinksParser extends RecursiveTask<StringBuffer> {
         }
 
         for (SiteLinksParser task : tasks) {
-            buffer.append(task.join());
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            buffer.append("\n").append(task.join());
         }
 
         return buffer;
