@@ -1,10 +1,8 @@
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
-import org.jsoup.UnsupportedMimeTypeException;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +24,7 @@ public class SiteNode {
         visitedUrls.add(this.url);
         this.tabNumber = tabNumber;
         this.childSites = new ArrayList<>();
-        parseLinks();
+//        parseLinks();
     }
 
     public String getUrl() {
@@ -45,13 +43,15 @@ public class SiteNode {
         return this.childSites;
     }
 
-    private void parseLinks() {
+    public void parseLinks() {
         try {
             Document doc = Jsoup.connect(this.url).maxBodySize(0).ignoreContentType(true).get();
             Elements links = doc.select(cssQuery); // все ссылки на сайте
             fillChildSites(clearLinks(links)); // подчищаем список ссылок и заполняем коллекции с дочерними сайтам
-        } catch (Exception e) {
+        } catch (HttpStatusException e) {
             System.out.println(e.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
