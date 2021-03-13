@@ -47,13 +47,11 @@ public class SiteNode {
 
     private void parseLinks() {
         try {
-            Document doc = Jsoup.connect(this.url).maxBodySize(0).get();
+            Document doc = Jsoup.connect(this.url).maxBodySize(0).ignoreContentType(true).get();
             Elements links = doc.select(cssQuery); // все ссылки на сайте
             fillChildSites(clearLinks(links)); // подчищаем список ссылок и заполняем коллекции с дочерними сайтам
-        } catch (UnsupportedMimeTypeException | MalformedURLException e) {
-            visitedUrls.add(this.url);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println(e.toString());
         }
     }
 
