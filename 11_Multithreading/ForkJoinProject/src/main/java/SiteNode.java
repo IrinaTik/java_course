@@ -3,17 +3,14 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SiteNode {
 
     private static final String cssQuery = "a[href]";
     private static final String[] filters = {"/skillbox.ru", "#"};
-    private static Set<String> visitedUrls = new HashSet<>();
+    private static Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
 
     private String url;
     private List<SiteNode> childSites;
@@ -24,7 +21,6 @@ public class SiteNode {
         visitedUrls.add(this.url);
         this.tabNumber = tabNumber;
         this.childSites = new ArrayList<>();
-//        parseLinks();
     }
 
     public String getUrl() {
@@ -58,30 +54,19 @@ public class SiteNode {
     // убираем из списка дочерних ссылок те ссылки, которые дублируют текущую ссылку и уже посещенные ссылки, чтобы не попасть в бесконечный цикл,
     //      а также убираем несоответствующие условию ссылки
     private Set<String> clearLinks(Elements links) {
-        Set<String> urlSet = links.stream().map(l -> l.attr("abs:href")).collect(Collectors.toSet());
-        Set<String> cloneLinks = new HashSet<>(urlSet);
-        for (String url : cloneLinks) {
-            if (this.url.equals(url) || isDoubleLink(url) || !isValidLink(url)) {
-                urlSet.remove(url);
-            }
-        }
-        return urlSet;
+        return links
+                .stream()
+                .map(l -> l.attr("abs:href"))
+                .filter(url1 -> !this.url.equals(url1) && !isDoubleLink(url1) && isValidLink(url1))
+                .collect(Collectors.toSet());
     }
 
     private boolean isValidLink(String currentUrl) {
-        if (currentUrl.contains(filters[0]) && !currentUrl.contains(filters[1])) {
-            return true;
-        }
-        return false;
+        return currentUrl.contains(filters[0]) && !currentUrl.contains(filters[1]);
     }
 
     private boolean isDoubleLink(String currentUrl) {
-        for (String visitedUrl : visitedUrls) {
-            if (visitedUrl.equals(currentUrl)) {
-                return true;
-            }
-        }
-        return false;
+        return visitedUrls.contains(currentUrl);
     }
 
     private void fillChildSites(Set<String> urls) {
@@ -92,4 +77,10 @@ public class SiteNode {
         }
     }
 
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        this.getchildSites().forEach(siteNode -> buffer.append(siteNode.toString()));
+        return this.getUrlWithTabs() + "\n" + buffer.toString();
+    }
 }

@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
 
-public class SiteLinksParser extends RecursiveTask<StringBuffer> {
+public class SiteLinksParser extends RecursiveTask<SiteNode> {
 
     private final SiteNode node;
 
@@ -11,9 +11,7 @@ public class SiteLinksParser extends RecursiveTask<StringBuffer> {
     }
 
     @Override
-    protected StringBuffer compute() {
-        StringBuffer buffer = new StringBuffer(node.getUrlWithTabs());
-
+    protected SiteNode compute() {
         node.parseLinks();
 
         List<SiteLinksParser> tasks = new ArrayList<>();
@@ -25,14 +23,9 @@ public class SiteLinksParser extends RecursiveTask<StringBuffer> {
         }
 
         for (SiteLinksParser task : tasks) {
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            buffer.append("\n").append(task.join());
+            task.join();
         }
 
-        return buffer;
+        return node;
     }
 }
