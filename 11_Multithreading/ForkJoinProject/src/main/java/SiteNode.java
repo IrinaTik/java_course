@@ -10,15 +10,16 @@ public class SiteNode {
 
     private static final String cssQuery = "a[href]";
     private static final String[] filters = {"/skillbox.ru", "#"};
-    private static Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
 
     private String url;
+    private Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
     private List<SiteNode> childSites;
     private int tabNumber;
 
-    public SiteNode(String url, int tabNumber) {
+    public SiteNode(String url, int tabNumber, Set<String> visitedUrls) {
         this.url = url;
-        visitedUrls.add(this.url);
+        this.visitedUrls.addAll(visitedUrls);
+        this.visitedUrls.add(this.url);
         this.tabNumber = tabNumber;
         this.childSites = new ArrayList<>();
     }
@@ -41,6 +42,7 @@ public class SiteNode {
 
     public void parseLinks() {
         try {
+            Thread.sleep(150);
             Document doc = Jsoup.connect(this.url).maxBodySize(0).ignoreContentType(true).get();
             Elements links = doc.select(cssQuery); // все ссылки на сайте
             fillChildSites(clearLinks(links)); // подчищаем список ссылок и заполняем коллекции с дочерними сайтам
@@ -72,7 +74,7 @@ public class SiteNode {
     private void fillChildSites(Set<String> urls) {
         visitedUrls.addAll(urls);
         for (String url : urls) {
-            SiteNode siteNode = new SiteNode(url, this.tabNumber + 1); // абсолютный путь
+            SiteNode siteNode = new SiteNode(url, this.tabNumber + 1, this.visitedUrls); // абсолютный путь
             this.childSites.add(siteNode);
         }
     }
