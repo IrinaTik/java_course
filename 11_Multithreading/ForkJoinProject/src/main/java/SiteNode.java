@@ -12,13 +12,21 @@ public class SiteNode {
     private static final String[] filters = {"/skillbox.ru", "#"};
 
     private String url;
-    private Set<String> visitedUrls = Collections.synchronizedSet(new HashSet<>());
+    private Set<String> visitedUrls;
     private List<SiteNode> childSites;
     private int tabNumber;
 
     public SiteNode(String url, int tabNumber, Set<String> visitedUrls) {
         this.url = url;
-        this.visitedUrls.addAll(visitedUrls);
+        this.visitedUrls = visitedUrls;
+        this.visitedUrls.add(this.url);
+        this.tabNumber = tabNumber;
+        this.childSites = new ArrayList<>();
+    }
+
+    public SiteNode(String url, int tabNumber) {
+        this.url = url;
+        this.visitedUrls = Collections.synchronizedSet(new HashSet<>());
         this.visitedUrls.add(this.url);
         this.tabNumber = tabNumber;
         this.childSites = new ArrayList<>();
@@ -68,13 +76,16 @@ public class SiteNode {
     }
 
     private boolean isDoubleLink(String currentUrl) {
-        return visitedUrls.contains(currentUrl);
+        if (visitedUrls.contains(currentUrl)) {
+            return true;
+        }
+        this.visitedUrls.add(currentUrl);
+        return false;
     }
 
     private void fillChildSites(Set<String> urls) {
-        visitedUrls.addAll(urls);
         for (String url : urls) {
-            SiteNode siteNode = new SiteNode(url, this.tabNumber + 1, this.visitedUrls); // абсолютный путь
+            SiteNode siteNode = new SiteNode(url, this.tabNumber + 1, this.visitedUrls);
             this.childSites.add(siteNode);
         }
     }
