@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class SiteNode {
 
     private static final String cssQuery = "a[href]";
-    private static final String[] filters = {"/skillbox.ru", "#"};
+    private static final String[] filters = {"//skillbox.ru", "#"};
 
     private String url;
     private Set<String> visitedUrls;
@@ -19,7 +19,6 @@ public class SiteNode {
     public SiteNode(String url, int tabNumber, Set<String> visitedUrls) {
         this.url = url;
         this.visitedUrls = visitedUrls;
-        this.visitedUrls.add(this.url);
         this.tabNumber = tabNumber;
         this.childSites = new ArrayList<>();
     }
