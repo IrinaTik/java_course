@@ -3,10 +3,7 @@ package main;
 import BDEmulator.Storage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import response.Task;
 
 import java.util.List;
@@ -19,11 +16,6 @@ public class TaskController {
         return Storage.getAllTasks();
     }
 
-    @PostMapping("/tasks/")
-    public int add(Task task) {
-        return Storage.addTask(task);
-    }
-
     @GetMapping("/tasks/{id}")
     public ResponseEntity<Task> get(@PathVariable int id) {
         Task task =  Storage.getTask(id);
@@ -31,6 +23,29 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return new ResponseEntity<>(task, HttpStatus.OK);
+    }
+
+    @PostMapping("/tasks/")
+    public int add(Task task) {
+        return Storage.addTask(task);
+    }
+
+    @PutMapping("/tasks/{id}")
+    public ResponseEntity<Task> update(@PathVariable int id, @RequestBody Task taskDetails) {
+        Task task = Storage.updateTask(id, taskDetails);
+        if (task == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return new ResponseEntity<>(task, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/tasks/{id}")
+    public ResponseEntity<Integer> delete(@PathVariable int id) {
+        boolean isRemoved = Storage.deleteTask(id);
+        if (!isRemoved) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return new ResponseEntity<>(id, HttpStatus.OK);
     }
 
 }
