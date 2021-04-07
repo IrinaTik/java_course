@@ -6,14 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import response.Task;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,11 +82,45 @@ public class TaskControllerTest {
                 task.setContext(String.valueOf(c));
                 Storage.addTask(task);
             }
+            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+            List<Future> futures = new ArrayList<>();
             this.base = new URL("http://localhost:" + port + "/tasks/3");
+            Runnable task = () -> {
+                ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
+                System.out.println("Status - " + response.getStatusCode());
+                System.out.println(response.getBody());
+                assertThat(response.getBody().equals(Storage.getAllTasks().get(2)));
+            };
+            for (int i = 0; i < 10; i++) {
+                futures.add(executor.submit(task));
+            }
+            futures.forEach(res -> {
+                try {
+                    res.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void deleteTask() {
+        for (char c = 'a'; c <= 'z'; c++) {
+            Task task = new Task();
+            task.setWorkerId(1);
+            task.setContext(String.valueOf(c));
+            Storage.addTask(task);
+        }
+        try {
+            this.base = new URL("http://localhost:" + port + "/tasks/3");
+            template.delete(base.toString());
             ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
-            System.out.println("Status - " + response.getStatusCode());
-            System.out.println(response.getBody());
-            assertThat(response.getBody().equals(Storage.getAllTasks().get(2)));
+            System.out.println(response.getStatusCode());
+            assertThat(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            System.out.println(Storage.getAllTasks());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
