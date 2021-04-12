@@ -45,6 +45,7 @@ public class TaskControllerTest {
                 ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
                 assertThat(response.getBody().equals(task.getId()));
             }
+            System.out.println(Storage.getAllTasks());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -107,7 +108,7 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void deleteTask() {
+    public void deleteOneTask() {
         for (char c = 'a'; c <= 'z'; c++) {
             Task task = new Task();
             task.setWorkerId(1);
@@ -121,6 +122,54 @@ public class TaskControllerTest {
             System.out.println(response.getStatusCode());
             assertThat(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
             System.out.println(Storage.getAllTasks());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void deleteSeveralTasks() {
+        for (char c = 'a'; c <= 'z'; c++) {
+            Task task = new Task();
+            task.setWorkerId(1);
+            task.setContext(String.valueOf(c));
+            Storage.addTask(task);
+        }
+
+        // удаление 10 заданий
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
+        List<Future> futures = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            String url = "http://localhost:" + port + "/tasks/" + (i + 3);
+            Runnable runnable = () -> {
+                template.delete(url);
+            };
+            futures.add(executor.submit(runnable));
+        }
+        futures.forEach(res -> {
+            try {
+                res.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+        System.out.println(Storage.getAllTasks());
+        System.out.println(Storage.getFreeIds());
+
+        // проверим, что добавление идет сначала через freeIds
+        try {
+            this.base = new URL("http://localhost:" + port + "/tasks/");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            for (char c = 'a'; c <= 'z'; c++) {
+                Task task = new Task();
+                task.setWorkerId(2);
+                task.setContext(String.valueOf(c));
+                HttpEntity<Task> taskEntity = new HttpEntity<>(task, headers);
+                ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
+            }
+            System.out.println(Storage.getAllTasks());
+            System.out.println(Storage.getFreeIds());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
