@@ -2,25 +2,20 @@ package BDEmulator;
 
 import response.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Storage {
 
-    private static int currentId = 1;
+    private static AtomicInteger currentId = new AtomicInteger(1);
     private static Map<Integer, Task> tasks = new ConcurrentHashMap<>();
-    private static Set<Integer> freeIds = new HashSet<>(); // идентификаторы, освободившиеся в результате удаления элементов
 
     public static int addTask(Task task) {
         int id;
-        if (freeIds.isEmpty()) {
-            id = currentId++;
-        } else {
-            synchronized (freeIds) {
-                id = freeIds.stream().findFirst().get();
-                freeIds.remove(id);
-            }
-        }
+        id = currentId.getAndIncrement();
         task.setId(id);
         tasks.put(id, task);
         return id;
@@ -52,16 +47,10 @@ public class Storage {
     public static boolean deleteTask(int id) {
         Task task = getTask(id);
         if (task != null) {
-            synchronized (freeIds) {
-                tasks.remove(id);
-                freeIds.add(id);
-            }
+            tasks.remove(id);
             return true;
         }
         return false;
     }
 
-    public static Set<Integer> getFreeIds() {
-        return freeIds;
-    }
 }

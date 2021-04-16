@@ -74,6 +74,7 @@ public class TaskControllerTest {
         }
     }
 
+    // запрос GET с имитацией многопоточности
     @Test
     public void testGetOneTask() {
         try {
@@ -127,6 +128,7 @@ public class TaskControllerTest {
         }
     }
 
+    // удаление с имитацией многопоточности
     @Test
     public void deleteSeveralTasks() {
         for (char c = 'a'; c <= 'z'; c++) {
@@ -136,7 +138,6 @@ public class TaskControllerTest {
             Storage.addTask(task);
         }
 
-        // удаление 10 заданий
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
@@ -154,22 +155,21 @@ public class TaskControllerTest {
             }
         });
         System.out.println(Storage.getAllTasks());
-        System.out.println(Storage.getFreeIds());
+    }
 
-        // проверим, что добавление идет сначала через freeIds
+    // удаление всех заданий одним запросом
+    @Test
+    public void deleteAllTasks() {
+        for (char c = 'a'; c <= 'z'; c++) {
+            Task task = new Task();
+            task.setWorkerId(1);
+            task.setContext(String.valueOf(c));
+            Storage.addTask(task);
+        }
         try {
             this.base = new URL("http://localhost:" + port + "/tasks/");
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            for (char c = 'a'; c <= 'z'; c++) {
-                Task task = new Task();
-                task.setWorkerId(2);
-                task.setContext(String.valueOf(c));
-                HttpEntity<Task> taskEntity = new HttpEntity<>(task, headers);
-                ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
-            }
+            template.delete(base.toString());
             System.out.println(Storage.getAllTasks());
-            System.out.println(Storage.getFreeIds());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
