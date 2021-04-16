@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import response.Task;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class TaskControllerTest {
@@ -30,6 +32,17 @@ public class TaskControllerTest {
 
     @Autowired
     private TestRestTemplate template;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private Storage storage;
+
+    @Test
+    public void scanContextForStorageComponent() {
+        assertNotNull(applicationContext.getBean(Storage.class));
+    }
 
     @Test
     public void testAddTask() {
@@ -45,7 +58,7 @@ public class TaskControllerTest {
                 ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
                 assertThat(response.getBody().equals(task.getId()));
             }
-            System.out.println(Storage.getAllTasks());
+            System.out.println(storage.getAllTasks());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -59,7 +72,7 @@ public class TaskControllerTest {
                 Task task = new Task();
                 task.setWorkerId(1);
                 task.setContext(String.valueOf(c));
-                Storage.addTask(task);
+                storage.addTask(task);
             }
             this.base = new URL("http://localhost:" + port + "/tasks/");
             ResponseEntity<Task[]> response = template.getForEntity(base.toString(), Task[].class);
@@ -67,7 +80,7 @@ public class TaskControllerTest {
             for (int i = 0; i < response.getBody().length; i++) {
                 Task task = response.getBody()[i];
                 System.out.println(task);
-                assertThat(task.equals(Storage.getAllTasks().get(i)));
+                assertThat(task.equals(storage.getAllTasks().get(i)));
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -82,7 +95,7 @@ public class TaskControllerTest {
                 Task task = new Task();
                 task.setWorkerId(1);
                 task.setContext(String.valueOf(c));
-                Storage.addTask(task);
+                storage.addTask(task);
             }
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
             List<Future> futures = new ArrayList<>();
@@ -91,7 +104,7 @@ public class TaskControllerTest {
                 ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
                 System.out.println("Status - " + response.getStatusCode());
                 System.out.println(response.getBody());
-                assertThat(response.getBody().equals(Storage.getAllTasks().get(2)));
+                assertThat(response.getBody().equals(storage.getAllTasks().get(2)));
             };
             for (int i = 0; i < 10; i++) {
                 futures.add(executor.submit(task));
@@ -114,7 +127,7 @@ public class TaskControllerTest {
             Task task = new Task();
             task.setWorkerId(1);
             task.setContext(String.valueOf(c));
-            Storage.addTask(task);
+            storage.addTask(task);
         }
         try {
             this.base = new URL("http://localhost:" + port + "/tasks/3");
@@ -122,7 +135,7 @@ public class TaskControllerTest {
             ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
             System.out.println(response.getStatusCode());
             assertThat(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
-            System.out.println(Storage.getAllTasks());
+            System.out.println(storage.getAllTasks());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -135,7 +148,7 @@ public class TaskControllerTest {
             Task task = new Task();
             task.setWorkerId(1);
             task.setContext(String.valueOf(c));
-            Storage.addTask(task);
+            storage.addTask(task);
         }
 
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
@@ -154,7 +167,7 @@ public class TaskControllerTest {
                 e.printStackTrace();
             }
         });
-        System.out.println(Storage.getAllTasks());
+        System.out.println(storage.getAllTasks());
     }
 
     // удаление всех заданий одним запросом
@@ -164,12 +177,12 @@ public class TaskControllerTest {
             Task task = new Task();
             task.setWorkerId(1);
             task.setContext(String.valueOf(c));
-            Storage.addTask(task);
+            storage.addTask(task);
         }
         try {
             this.base = new URL("http://localhost:" + port + "/tasks/");
             template.delete(base.toString());
-            System.out.println(Storage.getAllTasks());
+            System.out.println(storage.getAllTasks());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

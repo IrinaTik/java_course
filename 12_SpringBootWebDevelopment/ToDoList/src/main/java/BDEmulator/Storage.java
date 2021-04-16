@@ -1,5 +1,6 @@
 package BDEmulator;
 
+import org.springframework.stereotype.Component;
 import response.Task;
 
 import java.util.ArrayList;
@@ -8,12 +9,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Component("storage")
 public class Storage {
 
-    private static AtomicInteger currentId = new AtomicInteger(1);
-    private static Map<Integer, Task> tasks = new ConcurrentHashMap<>();
+    private AtomicInteger currentId = new AtomicInteger(1);
+    private Map<Integer, Task> tasks = new ConcurrentHashMap<>();
 
-    public static int addTask(Task task) {
+    public int addTask(Task task) {
         int id;
         id = currentId.getAndIncrement();
         task.setId(id);
@@ -21,20 +23,20 @@ public class Storage {
         return id;
     }
 
-    public static List<Task> getAllTasks() {
+    public List<Task> getAllTasks() {
         List<Task> taskList = new ArrayList<>();
         taskList.addAll(tasks.values());
         return taskList;
     }
 
-    public static Task getTask(int id) {
+    public Task getTask(int id) {
         if (tasks.containsKey(id)) {
             return tasks.get(id);
         }
         return null;
     }
 
-    public static Task updateTask(int id, Task taskDetails) {
+    public Task updateTask(int id, Task taskDetails) {
         Task task = getTask(id);
         if (task != null) {
             task.setContext(taskDetails.getContext());
@@ -44,7 +46,7 @@ public class Storage {
         return null;
     }
 
-    public static boolean deleteTask(int id) {
+    public boolean deleteTask(int id) {
         Task task = getTask(id);
         if (task != null) {
             tasks.remove(id);
