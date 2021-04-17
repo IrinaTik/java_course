@@ -1,11 +1,12 @@
-package main;
+package main.controllers;
 
-import BDEmulator.Storage;
+import main.BDEmulator.Storage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import response.Task;
+import main.response.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,16 +31,16 @@ public class TaskController {
         return new ResponseEntity(task, HttpStatus.OK);
     }
 
-    @PostMapping("/tasks/")
-    public int add(Task task) {
+    @PostMapping(value = "/tasks/", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public int add(@RequestBody Task task) {
         return storage.addTask(task);
     }
 
     // одиночные методы PUT \ DELETE
 
     @PutMapping("/tasks/{id}")
-    public ResponseEntity update(@PathVariable int id, @RequestBody Task taskDetails) {
-        Task task = storage.updateTask(id, taskDetails);
+    public ResponseEntity update(@RequestBody Task taskDetails) {
+        Task task = storage.updateTask(taskDetails.getId(), taskDetails);
         if (task == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
