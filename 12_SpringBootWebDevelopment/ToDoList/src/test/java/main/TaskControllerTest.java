@@ -1,6 +1,7 @@
 package main;
 
 import main.BDEmulator.Storage;
+import main.response.Worker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,9 +47,13 @@ public class TaskControllerTest {
 
     @BeforeEach
     public void fillStorage() {
+        Worker worker = new Worker();
+        worker.setName("Ivan");
+        worker.setExpertise("helper");
+        storage.addWorker(worker);
         for (char c = 'a'; c <= 'z'; c++) {
             Task task = new Task();
-            task.setWorkerId(1);
+            task.setWorker(worker);
             task.setContext(String.valueOf(c));
             storage.addTask(task);
         }
@@ -70,9 +75,10 @@ public class TaskControllerTest {
             this.base = new URL("http://localhost:" + port + "/tasks/");
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+
             for (char c = 'a'; c <= 'z'; c++) {
                 Task task = new Task();
-                task.setWorkerId(1);
+                task.setWorker(storage.getWorker(1));
                 task.setContext(String.valueOf(c));
                 HttpEntity<Task> taskEntity = new HttpEntity<>(task, headers);
                 ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
@@ -190,7 +196,7 @@ public class TaskControllerTest {
             Task updatedTaskInfo = new Task();
             updatedTaskInfo.setId(taskIndex);
             updatedTaskInfo.setContext("qwerty");
-            updatedTaskInfo.setWorkerId(13);
+            updatedTaskInfo.setWorker(storage.getWorker(1));
             this.base = new URL("http://localhost:" + port + "/tasks/" + taskIndex);
             template.put(base.toString(), updatedTaskInfo);
             assertThat(storage.getTask(taskIndex).equals(updatedTaskInfo));

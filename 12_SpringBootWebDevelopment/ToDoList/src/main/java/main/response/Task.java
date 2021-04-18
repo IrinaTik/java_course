@@ -6,7 +6,7 @@ public class Task {
 
     private int id;
     private String context;
-    private int workerId;
+    private Worker worker;
 
     public int getId() {
         return id;
@@ -24,12 +24,12 @@ public class Task {
         this.context = context;
     }
 
-    public int getWorkerId() {
-        return workerId;
+    public Worker getWorker() {
+        return worker;
     }
 
-    public void setWorkerId(int workerId) {
-        this.workerId = workerId;
+    public void setWorker(Worker worker) {
+        this.worker = worker;
     }
 
     @Override
@@ -38,13 +38,13 @@ public class Task {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
         return id == task.id &&
-                workerId == task.workerId &&
+                worker == task.worker &&
                 Objects.equals(context, task.context);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, context, workerId);
+        return Objects.hash(id, context, worker);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class Task {
         return "Task{" +
                 "id=" + id +
                 ", context='" + context + '\'' +
-                ", workerId=" + workerId +
+                worker +
                 '}';
     }
 }

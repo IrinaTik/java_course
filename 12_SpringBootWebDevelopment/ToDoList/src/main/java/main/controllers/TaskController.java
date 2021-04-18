@@ -1,6 +1,7 @@
 package main.controllers;
 
 import main.BDEmulator.Storage;
+import main.response.Worker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +34,10 @@ public class TaskController {
 
     @PostMapping(value = "/tasks/", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public int add(@RequestBody Task task) {
+        Worker worker = task.getWorker();
+        if (worker.getId() == null) {
+            storage.addWorker(worker);
+        }
         return storage.addTask(task);
     }
 
@@ -86,7 +91,7 @@ public class TaskController {
             storage.deleteTask(i);
         }
         if (storage.getAllTasks().size() == 0) {
-            return new ResponseEntity("0", HttpStatus.OK);
+            return new ResponseEntity("Task list deleted", HttpStatus.OK);
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error while deleting");
     }
