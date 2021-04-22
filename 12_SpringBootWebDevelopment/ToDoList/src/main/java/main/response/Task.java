@@ -1,11 +1,18 @@
 package main.response;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
 public class Task {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     private String context;
+
+    @OneToOne(cascade = CascadeType.ALL)
     private Worker worker;
 
     public int getId() {

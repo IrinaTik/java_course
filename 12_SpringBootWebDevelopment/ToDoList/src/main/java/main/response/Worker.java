@@ -1,20 +1,23 @@
 package main.response;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.util.Objects;
 
+@Entity
 public class Worker {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+
     private String name;
+
     private String expertise;
 
     public Worker() {
-    }
-
-    public Worker(Integer id, String name, String expertise) {
-        this.id = id;
-        this.name = name;
-        this.expertise = expertise;
     }
 
     public Integer getId() {
