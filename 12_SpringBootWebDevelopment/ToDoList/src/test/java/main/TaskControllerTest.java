@@ -1,7 +1,9 @@
 package main;
 
 import main.BDEmulator.Storage;
+import main.response.TaskRepository;
 import main.response.Worker;
+import main.response.WorkerRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,25 +45,29 @@ public class TaskControllerTest {
     private ApplicationContext applicationContext;
 
     @Autowired
-    private Storage storage;
+    private TaskRepository taskRepository;
 
-    @BeforeEach
-    public void fillStorage() {
+    @Autowired
+    private WorkerRepository workerRepository;
+
+    public void fillDB() {
         Worker worker = new Worker();
         worker.setName("Ivan");
         worker.setExpertise("helper");
-        storage.addWorker(worker);
+        workerRepository.save(worker);
         for (char c = 'a'; c <= 'z'; c++) {
             Task task = new Task();
             task.setWorker(worker);
             task.setContext(String.valueOf(c));
-            storage.addTask(task);
+            taskRepository.save(task);
         }
     }
 
-    @AfterEach
-    public void clearStorage() {
-        storage.getAllTasks().clear();
+    private List<Task> getAllTasksFromDB() {
+        Iterable<Task> taskIterable = taskRepository.findAll();
+        List<Task> tasks = new ArrayList<>();
+        taskIterable.forEach(tasks::add);
+        return tasks;
     }
 
     @Test
@@ -75,16 +81,19 @@ public class TaskControllerTest {
             this.base = new URL("http://localhost:" + port + "/tasks/");
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
+            Worker worker = new Worker();
+            worker.setName("Ivanka");
+            worker.setExpertise("durak");
+            workerRepository.save(worker);
             for (char c = 'a'; c <= 'z'; c++) {
                 Task task = new Task();
-                task.setWorker(storage.getWorker(1));
+                task.setWorker(worker);
                 task.setContext(String.valueOf(c));
                 HttpEntity<Task> taskEntity = new HttpEntity<>(task, headers);
-                ResponseEntity<Integer> response = template.postForEntity(base.toString(), taskEntity, Integer.class);
-                assertThat(response.getBody().equals(task.getId()));
+                ResponseEntity<Task> response = template.postForEntity(base.toString(), taskEntity, Task.class);
+                assertThat(response.getBody().getId() == (task.getId()));
             }
-            System.out.println(storage.getAllTasks());
+            System.out.println(getAllTasksFromDB());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -100,7 +109,7 @@ public class TaskControllerTest {
             for (int i = 0; i < response.getBody().length; i++) {
                 Task task = response.getBody()[i];
                 System.out.println(task);
-                assertThat(task.equals(storage.getAllTasks().get(i)));
+                assertThat(task.equals(getAllTasksFromDB().get(i)));
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -118,7 +127,10 @@ public class TaskControllerTest {
                 ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
                 System.out.println("Status - " + response.getStatusCode());
                 System.out.println(response.getBody());
-                assertThat(response.getBody().equals(storage.getAllTasks().get(taskIndex - 1)));
+                Task taskWithIndex = getAllTasksFromDB().stream()
+                        .filter(t -> t.getId() == (taskIndex - 1))
+                        .findFirst().get();
+                assertThat(response.getBody().equals(taskWithIndex));
             };
             for (int i = 0; i < 10; i++) {
                 futures.add(executor.submit(task));
@@ -140,10 +152,10 @@ public class TaskControllerTest {
         try {
             this.base = new URL("http://localhost:" + port + "/tasks/" + taskIndex);
             template.delete(base.toString());
-            ResponseEntity<Task> response = template.getForEntity(base.toString(), Task.class);
+            ResponseEntity response = template.getForEntity(base.toString(), Task.class);
             System.out.println(response.getStatusCode());
             assertThat(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
-            System.out.println(storage.getAllTasks());
+            System.out.println(getAllTasksFromDB());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -155,7 +167,7 @@ public class TaskControllerTest {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(5);
         List<Future> futures = new ArrayList<>();
         // удаляем несколько записей подряд из рандомного места списка
-        for (int i = 3; i < 13; i++) {
+        for (int i = 4; i < 13; i++) {
             String url = "http://localhost:" + port + "/tasks/" + i;
             Runnable runnable = () -> {
                 template.delete(url);
@@ -171,9 +183,9 @@ public class TaskControllerTest {
         });
 
         for (int i = 3; i < 13; i++) {
-            assertThat(storage.getTask(i) == null);
+            assertThat(getAllTasksFromDB().get(i) == null);
         }
-        System.out.println(storage.getAllTasks());
+        System.out.println(getAllTasksFromDB());
     }
 
     // удаление всех заданий одним запросом
@@ -182,8 +194,8 @@ public class TaskControllerTest {
         try {
             this.base = new URL("http://localhost:" + port + "/tasks/");
             template.delete(base.toString());
-            assertTrue(storage.getAllTasks().isEmpty());
-            System.out.println(storage.getAllTasks());
+            assertTrue(getAllTasksFromDB().isEmpty());
+            System.out.println(getAllTasksFromDB());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -196,11 +208,11 @@ public class TaskControllerTest {
             Task updatedTaskInfo = new Task();
             updatedTaskInfo.setId(taskIndex);
             updatedTaskInfo.setContext("qwerty");
-            updatedTaskInfo.setWorker(storage.getWorker(1));
+            updatedTaskInfo.setWorker(workerRepository.findById(1).get());
             this.base = new URL("http://localhost:" + port + "/tasks/" + taskIndex);
             template.put(base.toString(), updatedTaskInfo);
-            assertThat(storage.getTask(taskIndex).equals(updatedTaskInfo));
-            System.out.println(storage.getAllTasks());
+            assertThat(getAllTasksFromDB().get(taskIndex).equals(updatedTaskInfo));
+            System.out.println(getAllTasksFromDB());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

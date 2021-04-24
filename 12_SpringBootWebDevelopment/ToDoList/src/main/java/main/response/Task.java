@@ -12,7 +12,8 @@ public class Task {
 
     private String context;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "worker_id")
     private Worker worker;
 
     public int getId() {
